@@ -1,5 +1,5 @@
 ###############################################################################################################
-# Miscellanous small exported functions #######################################################################
+# Miscellaneous small exported functions ######################################################################
 ###############################################################################################################
 
 #' Convert adjacency matrix to graphNEL object
@@ -8,8 +8,14 @@
 #' 
 #' @return A \code{graphNEL} object, see  \code{\link[graph]{graphNEL-class}}.
 #' 
+#' @importFrom methods as
+#' 
 #' @export
 as.graphNEL <- function(amat) {
+  thisClass <- class(amat)
+  if ("tamat" %in% thisClass) {
+    class(amat) <- "matrix"
+  }
   as(t(amat), "graphNEL")
 }
 
@@ -44,10 +50,37 @@ is_cpdag <- function(amat) {
 #' Convert graphNEL object to adjacency matrix
 #' 
 #' @param graph A graphNEL object. 
+#' @param toFrom Logical indicating whether the resulting adjancency
+#' matrix is "to-from" (default), or "from-to", see details. 
+#' @param type  The type of adjancency matrix, must be one of \code{"pdag"} or 
+#' \code{"ag"}. \code{"pdag"} should be used for directed graphs, namely
+#'  DAG, CPDAG, MPDAG, TPDAG and PDAG adjacency matrices, i.e. adjacency matrices 
+#'  where A(i,j) = A(j,i) = 1 is interpreted as an undirected edge. \code{"ag"}
+#'  may be used for ADMGs, MAGs, PAGs and TPAGs, where further possible arrowhead
+#'  options are available (see \link{amat})
 #' 
+#' @details 
+#' A "to-from" \code{pdag} adjacency matrix is encoded as follows: A(i,j) = 1 and A(j,i) = 0 
+#' means there is an edge i -> j. A(j,i) = 1 and A(i,j) = 0 means there is an edge j -> i. 
+#' A(i,j) = 1 and A(j,i) = 1 means there is an undirected edge between i and j, i - j. 
+#' A(i,j) = 0 and A(j,i) = 0 means there is no edge between i and j. 
+#' 
+#' A "from-to" adjacency matrix is the transpose of a "to-from" adjacency matrix. 
+#' A "from-to" \code{pdag} adjacency matrix is hence encoded as follows: A(i,j) = 1 and A(j,i) = 0 
+#' means there is an edge j -> i. A(j,i) = 1 and A(i,j) = 0 means there is an edge i -> j. 
+#' A(i,j) = 1 and A(j,i) = 1 means there is an undirected edge between i and j, i - j. 
+#' A(i,j) = 0 and A(j,i) = 0 means there is no edge between i and j. 
+#' 
+#' See \link{amat} for details about how an \code{ag} adjacency matrix is encoded. 
+#' 
+#' @importFrom methods as
+#'  
 #' @export
-graph2amat <- function(graph) {
-  t(as(graph, "matrix"))
+graph2amat <- function(graph, toFrom = TRUE, type = "pdag") {
+  res <- as(graph, "matrix")
+  if (toFrom) res <- t(res)
+  attr(res, "tamat_type") <- type
+  res
 }
 
 
@@ -115,6 +148,8 @@ nedges <- function(amat) {
 
 
 
+
+
 ###############################################################################################################
 # Not exported below###########################################################################################
 ###############################################################################################################
@@ -131,3 +166,15 @@ halfskel <- function(amat) {
   out <- amat + t(amat) != 0
   as.numeric(out[lower.tri(out)])
 }
+
+##' @importClassesFrom pcalg fciAlgo
+#amat2fciAlgo <- function(amat) {
+#  class(amat) <- c(class(amat), "matrix")
+#  new("fciAlgo", amat = amat, call = NA, n = NA,
+#      max.ord = NA,
+#      max.ordPDSEP = NA,
+#      n.edgetests = NA, n.edgetestsPDSEP = NA,
+#      sepset = NA, pMax = NA, allPdsep = NA)
+#  
+#}
+

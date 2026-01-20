@@ -14,22 +14,46 @@
 #' may also be used, see details below about the required syntax.
 #' @param suffStat Sufficient statistic. If this argument is supplied, the
 #' sufficient statistic is not computed from the inputted data. The format and
-#' contents of the sufficient statistic depends on which test is being used. 
-#' @param output One of \code{"tpdag"} or \code{"tskeleton"}. If
-#' \code{"skeleton"}, a temporal skeleton is constructed and outputted,
+#' contents of the sufficient statistic depends on which test is being used.
+#' @param method Which method to use for skeleton construction, must be
+#' \code{"stable"}, \code{"original"}, or \code{"stable.fast"} (the default).
+#' See \code{\link[pcalg]{skeleton}} for details.
+#' @param methodNA Method for handling missing information (\code{NA} values).
+#' Must be one of \code{"none"} (default, an error is thrown if \code{NA}s
+#' are present), \code{"cc"} (complete case analysis, deletes all observations
+#' that have any \code{NA} values), or \code{"twd"} (test wise deletion, omits
+#' observations with missing information test-by-test) (further details below).
+#' @param methodOri Method for handling conflicting separating sets when orienting
+#' edges. Currently only the conservative method is available.
+#' @param output One of \code{"tpdag"}, \code{"tskeleton"} or \code{"pcAlgo"}. If
+#' \code{"tskeleton"}, a temporal skeleton is constructed and outputted,
 #' but the edges are not directed. If \code{"tpdag"} (the default), a
 #' the edges are directed, resulting in a temporal partially directed
-#' acyclic graph.
-#' @param ... Further optional arguments which are currently not in use.
+#' acyclic graph (TPDAG). If \code{"pcAlgo"} the TPDAG is outputted as the
+#' object class \code{\link[pcalg]{pcAlgo-class}} from the pcalg package. This is
+#' intended for compatability with tools from that package.
+#'@param varnames A character vector of variable names. It only needs to be supplied
+#' if the \code{data} argument is not used, and data are hence passed exclusively
+#' through the \code{suffStat} argument.
+#' @param ... Further optional arguments which are passed to
+#' \code{\link[pcalg]{skeleton}} for the skeleton constructing phase.
 #'
 #' @details Note that all independence test procedures implemented
 #' in the \code{pcalg} package may be used, see \code{\link[pcalg]{pc}}.
 #'
+#' The methods for handling missing information require that the \code{data},
+#' rather than the \code{suffStat} argument is used for inputting data; the latter
+#' assumes no missing information and hence always sets \code{methodNA = "none"}.
+#' If the test is \code{corTest}, test-wise deletion is performed when computing the
+#' sufficient statistic (correlation matrix) (so for each pair of variables, only
+#' complete cases are used). If the test is \code{regTest}, test-wise deletion
+#' is performed for each conditional independence test instead.
+#
 #' @return A \code{tpdag} or \code{tskeleton} object. Both return types are
-#' S3 objects, i.e., lists with entries: \code{$amat} (the estimated adjacency 
+#' S3 objects, i.e., lists with entries: \code{$tamat} (the estimated adjacency
 #' matrix), \code{$order} (character vector with the order, as inputted to
 #' this function), \code{$psi} (the significance level used for testing), and
-#' \code{$ntests} (the number of tests conducted). 
+#' \code{$ntests} (the number of tests conducted).
 #'
 #'
 #'
@@ -38,17 +62,17 @@
 #' #information loss):
 #' data(tpcExample)
 #' tpc(tpcExample, order = c("child", "youth", "oldage"), sparsity = 0.01)
-#' 
-#' 
+#'
+#'
 #' #TPC on included example data, use sparsity psi = 0.01, use test for vanishing partial
 #' # correlations:
 #' data(tpcExample)
 #' tpc(tpcExample, order = c("child", "youth", "oldage"), sparsity = 0.01,
 #' test = corTest)
-#' 
+#'
 #'
 #' #TPC on another simulated data set
-#' 
+#'
 #' #Simulate data
 #' set.seed(123)
 #' n <- 500
@@ -56,7 +80,7 @@
 #' child_y <- 0.5*child_x + rnorm(n)
 #' child_z <- sample(c(0,1), n, replace = TRUE,
 #'                   prob = c(0.3, 0.7))
-#'          
+#'
 #' adult_x <- child_x + rnorm(n)
 #' adult_z <- as.numeric(child_z + rnorm(n) > 0)
 #' adult_w <- 2*adult_z + rnorm(n)
@@ -73,18 +97,48 @@
 #' results <- tpc(simdata, order = simorder, sparsity = 10^(-3))
 #'
 #' @importFrom pcalg skeleton
+#' @importFrom stats na.omit
 #'
 #' @export
-tpc <- function(data, order, sparsity = 10^(-1), test = regTest,
-                suffStat = NULL, output = "tpdag", ...) {
+tpc <- function(data = NULL, order, sparsity = 10^(-1), test = regTest,
+                suffStat = NULL, method = "stable.fast",
+                methodNA = "none",
+                methodOri = "conservative",
+                output = "tpdag",
+                varnames = NULL, ...) {
 
   #check arguments
-  if (!output %in% c("tpdag", "tskeleton")) {
-    stop("Output must be tpdag or tskeleton.")
+  if (!output %in% c("tpdag", "tskeleton", "pcAlgo")) {
+    stop("Output must be tpdag, tskeleton or pcAlgo.")
+  }
+  if (!methodNA %in% c("none", "cc", "twd")) {
+    stop("Invalid choice of method for handling NA values.")
+  }
+  if (is.null(data) & is.null(suffStat)) {
+    stop("Either data or sufficient statistic must be supplied.")
+  }
+
+  # handle missing information
+  # note: twd is handled by the test: they have this as default, so the code here
+  # is used to ensure that missing info is only passed along if we in fact want to
+  # use twd
+  if (any(is.na(data))) {
+    if (methodNA == "none") {
+      stop("Inputted data contain NA values, but no method for handling missing NAs was supplied.")
+    } else if (methodNA == "cc") {
+      data <- na.omit(data)
+      if (nrow(data) == 0) {
+        stop("Complete case analysis chosen, but inputted data contain no complete cases.")
+      }
+    }
   }
 
   #variable names
-  vnames <- names(data)
+  if (is.null(data)) {
+    vnames <- varnames
+  } else {
+    vnames <- names(data)
+  }
 
   #make testing procedure that does not condition on
   #the future
@@ -104,6 +158,7 @@ tpc <- function(data, order, sparsity = 10^(-1), test = regTest,
     }
   } else {
     thisSuffStat <- suffStat
+    methodNA <- "none" #can't handle NA for user-supplied suff. stat./test
   }
 
   #Learn skeleton
@@ -111,23 +166,27 @@ tpc <- function(data, order, sparsity = 10^(-1), test = regTest,
                    indepTest = thisDirTest,
                    alpha = sparsity,
                    labels = vnames,
-                   method = "stable.fast")
+                   method = method, ...)
   ntests <- sum(skel@n.edgetests)
 
 
   if (output == "tskeleton") {
-    out <- list(amat = skel@amat, order = order, psi = sparsity,
+    out <- list(tamat = tamat(amat = graph2amat(skel), order = order), psi = sparsity,
                 ntest = ntests)
     class(out) <- "tskeleton"
-  } else { #case: output == "tpdag"
+  } else { #case: output == "tpdag" or "pcAlgo"
 
     #Direct edges
     res <- tpdag(skel, order = order)
 
     #Pack up output
-    out <- list(amat = amat(res), order = order, psi = sparsity,
+    if (output == "tpdag") {
+      out <- list(tamat = tamat(amat = graph2amat(res, toFrom = FALSE), order = order), psi = sparsity,
                 ntests = ntests)
-    class(out) <- "tpdag"
+      class(out) <- "tpdag"
+    } else if (output == "pcAlgo") {
+      out <- res
+    }
   }
 
   out
@@ -144,15 +203,16 @@ tpc <- function(data, order, sparsity = 10^(-1), test = regTest,
 
 
 
-
+#' @importFrom stats cor na.omit
 makeSuffStat <- function(data, type, ...) {
   #browser()
   if (type == "regTest") {
-    bin <- unlist(sapply(data, function(x) length(unique(x)) == 2))
+    bin <- unlist(sapply(data, function(x) length(unique(na.omit(x))) == 2))
     suff <- list(data = data, binary = bin)
   #  if (!is.null(order)) suff$order <- order
   } else if (type == "corTest") {
-    suff <- list(C = stats::cor(data), n = nrow(data))
+    suff <- list(C = cor(data, use = "pairwise.complete.obs"),
+                 n = nrow(data))
   } else {
     stop(paste(type, "is not a supported type for",
                "autogenerating a sufficient statistic"))
@@ -208,17 +268,17 @@ dirTest <- function(test, vnames, order) {
 
 #' @importFrom pcalg addBgKnowledge
 tpdag <- function(skel, order) {
-  thisAmat <- amat(skel)
+  thisAmat <- graph2amat(skel)
 
   #order restrict amat
-  tempSkelAmat <- orderRestrictAmat(thisAmat, order = order)
+  tempSkelAmat <- orderRestrictAmat_cpdag(thisAmat, order = order)
 
   pcalg::addBgKnowledge(vOrientTemporal(tempSkelAmat, skel@sepset), checkInput = FALSE)
 }
 
 
 
-orderRestrictAmat <- function(amat, order) {
+orderRestrictAmat_cpdag <- function(amat, order) {
   p <- nrow(amat)
   vnames <- rownames(amat)
 
@@ -233,9 +293,9 @@ orderRestrictAmat <- function(amat, order) {
 
 
 
-#' 
+#'
 #' @importFrom gtools combinations
-#' 
+#'
 vOrientTemporal <- function(amat, sepsets) {
   vnames <- rownames(amat)
   nvar <- nrow(amat)
@@ -306,13 +366,13 @@ edgesFromAdjMat <- function(amat) {
 }
 
 
-#' @importFrom methods as
-amat <- function(pcres) {
-  as(pcres, "amat") #methods
-}
+##' @importFrom methods as
+#amat <- function(pcres) {
+#  as(pcres, "amat") #methods
+#}
 
 
-## Old function that may be useful if we want to add bnlearn engine 
+## Old function that may be useful if we want to add bnlearn engine
 ## #' @importFrom dplyr intersect
 ## makeBgKnowledge <- function(amat, data, order, sep = "_") {
 ##  # browser()

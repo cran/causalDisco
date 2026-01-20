@@ -1,11 +1,33 @@
 Package: causalDisco
 Title: Tools for Causal Discovery on Observational Data
-Version: 0.9.1
+Version: 0.9.5
 Authors@R: 
-    person(given = "Anne Helby",
-           family = "Petersen",
-           role = c("aut", "cre"),
-           email = "ahpe@sund.ku.dk")
+    c(
+      person(
+        given = "Anne Helby",
+        family = "Petersen",
+        role = "aut",
+        email = "ahpe@sund.ku.dk"
+      ),
+      person(
+        given = "Tobias Ellegaard",
+        family = "Larsen",
+        role = "ctb",
+        email = "tobias.ellegaard@sund.ku.dk"
+      ),
+      person(
+        given = "Claus Thorn",
+        family = "Ekstrøm",
+        role = "ctb",
+        email = "ekstrom@sund.ku.dk"
+      ),
+      person(
+        given = "Bjarke Hautop",
+        family = "Kristensen",
+        role = c("ctb", "cre"),
+        email = "bjarke.kristensen@sund.ku.dk"
+      )
+    )
 Description: Various tools for inferring causal models from observational data. The package 
     includes an implementation of the temporal Peter-Clark (TPC) algorithm. Petersen, Osler 
     and Ekstrøm (2021) <doi:10.1093/aje/kwab087>. It also includes general tools
@@ -15,13 +37,23 @@ Depends: R (>= 3.5.0)
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
-URL: https://github.com/annennenne/causalDisco
-BugReports: https://github.com/annennenne/causalDisco/issues
-RoxygenNote: 7.1.1
-Imports: pcalg, igraph, RColorBrewer, gtools, clipr, methods, scales
+URL: https://github.com/disco-coders/causalDisco
+BugReports: https://github.com/disco-coders/causalDisco/issues
+RoxygenNote: 7.3.3
+Imports: pcalg, igraph, RColorBrewer, gtools, clipr, methods, scales,
+        Rgraphviz, graph, magick, rmarkdown
+Collate: 'amat.R' 'causalDisco-package.R' 'compare.R' 'confusion.R'
+        'corTest.R' 'edges.R' 'evaluate.R' 'tpc.R' 'fci.R'
+        'gausCorScore.R' 'maketikz.R' 'metrics.R' 'misc.R' 'nDAGs.R'
+        'pc.R' 'plot.R' 'plotTempoMech.R' 'probmat2amat.R' 'regTest.R'
+        'simDAG.R' 'simGausFromDAG.R' 'tamat.R' 'tfci.R' 'tges.R'
+        'tplot.R'
 NeedsCompilation: no
-Packaged: 2022-05-10 16:40:10 UTC; root
-Author: Anne Helby Petersen [aut, cre]
-Maintainer: Anne Helby Petersen <ahpe@sund.ku.dk>
+Packaged: 2026-01-20 08:04:11 UTC; hwm271
+Author: Anne Helby Petersen [aut],
+  Tobias Ellegaard Larsen [ctb],
+  Claus Thorn Ekstrøm [ctb],
+  Bjarke Hautop Kristensen [ctb, cre]
+Maintainer: Bjarke Hautop Kristensen <bjarke.kristensen@sund.ku.dk>
 Repository: CRAN
-Date/Publication: 2022-05-12 07:50:06 UTC
+Date/Publication: 2026-01-20 09:10:02 UTC

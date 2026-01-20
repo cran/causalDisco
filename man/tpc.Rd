@@ -5,12 +5,16 @@
 \title{Perform causal discovery using the temporal PC algorithm (TPC)}
 \usage{
 tpc(
-  data,
+  data = NULL,
   order,
   sparsity = 10^(-1),
   test = regTest,
   suffStat = NULL,
+  method = "stable.fast",
+  methodNA = "none",
+  methodOri = "conservative",
   output = "tpdag",
+  varnames = NULL,
   ...
 )
 }
@@ -35,17 +39,37 @@ may also be used, see details below about the required syntax.}
 sufficient statistic is not computed from the inputted data. The format and
 contents of the sufficient statistic depends on which test is being used.}
 
-\item{output}{One of \code{"tpdag"} or \code{"tskeleton"}. If
-\code{"skeleton"}, a temporal skeleton is constructed and outputted,
+\item{method}{Which method to use for skeleton construction, must be
+\code{"stable"}, \code{"original"}, or \code{"stable.fast"} (the default).
+See \code{\link[pcalg]{skeleton}} for details.}
+
+\item{methodNA}{Method for handling missing information (\code{NA} values).
+Must be one of \code{"none"} (default, an error is thrown if \code{NA}s
+are present), \code{"cc"} (complete case analysis, deletes all observations
+that have any \code{NA} values), or \code{"twd"} (test wise deletion, omits
+observations with missing information test-by-test) (further details below).}
+
+\item{methodOri}{Method for handling conflicting separating sets when orienting
+edges. Currently only the conservative method is available.}
+
+\item{output}{One of \code{"tpdag"}, \code{"tskeleton"} or \code{"pcAlgo"}. If
+\code{"tskeleton"}, a temporal skeleton is constructed and outputted,
 but the edges are not directed. If \code{"tpdag"} (the default), a
 the edges are directed, resulting in a temporal partially directed
-acyclic graph.}
+acyclic graph (TPDAG). If \code{"pcAlgo"} the TPDAG is outputted as the
+object class \code{\link[pcalg]{pcAlgo-class}} from the pcalg package. This is
+intended for compatability with tools from that package.}
 
-\item{...}{Further optional arguments which are currently not in use.}
+\item{varnames}{A character vector of variable names. It only needs to be supplied
+if the \code{data} argument is not used, and data are hence passed exclusively
+through the \code{suffStat} argument.}
+
+\item{...}{Further optional arguments which are passed to
+\code{\link[pcalg]{skeleton}} for the skeleton constructing phase.}
 }
 \value{
 A \code{tpdag} or \code{tskeleton} object. Both return types are
-S3 objects, i.e., lists with entries: \code{$amat} (the estimated adjacency
+S3 objects, i.e., lists with entries: \code{$tamat} (the estimated adjacency
 matrix), \code{$order} (character vector with the order, as inputted to
 this function), \code{$psi} (the significance level used for testing), and
 \code{$ntests} (the number of tests conducted).
@@ -56,6 +80,14 @@ Perform causal discovery using the temporal PC algorithm (TPC)
 \details{
 Note that all independence test procedures implemented
 in the \code{pcalg} package may be used, see \code{\link[pcalg]{pc}}.
+
+The methods for handling missing information require that the \code{data},
+rather than the \code{suffStat} argument is used for inputting data; the latter
+assumes no missing information and hence always sets \code{methodNA = "none"}.
+If the test is \code{corTest}, test-wise deletion is performed when computing the
+sufficient statistic (correlation matrix) (so for each pair of variables, only
+complete cases are used). If the test is \code{regTest}, test-wise deletion
+is performed for each conditional independence test instead.
 }
 \examples{
 #TPC on included example data, use sparsity psi = 0.01, default test (regression-based
@@ -80,7 +112,7 @@ child_x <- rnorm(n)^2
 child_y <- 0.5*child_x + rnorm(n)
 child_z <- sample(c(0,1), n, replace = TRUE,
                   prob = c(0.3, 0.7))
-         
+
 adult_x <- child_x + rnorm(n)
 adult_z <- as.numeric(child_z + rnorm(n) > 0)
 adult_w <- 2*adult_z + rnorm(n)

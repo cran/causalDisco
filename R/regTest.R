@@ -35,7 +35,7 @@ regTest <- function(x, y, S, suffStat) {
 #note: x, y, S are indexes of vars
 
 #' @importFrom splines ns
-#' @importFrom stats glm as.formula update anova
+#' @importFrom stats glm as.formula update anova na.omit
 regTestEachDir <- function(x, y, S, suffStat) {
 
   #args <- suffStat$otherArgs
@@ -53,6 +53,9 @@ regTestEachDir <- function(x, y, S, suffStat) {
   vnames <- names(data)
   #order <- suffStat$order
 
+  #Restrict data to only complete cases of x, y, s (test-wise deletion)
+  data <- na.omit(data[, c(x, y, S)])
+  
   #Choose exponential family according to ys type
   if (binary[y]) {
     fam <- "binomial"
