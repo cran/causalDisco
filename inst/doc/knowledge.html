@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Knowledge</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Knowledge</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(causalDisco)</span></code></pre></div>
+<p>This vignette demonstrates how to use the <code>knowledge()</code>
+function to incorporate prior knowledge into causal discovery
+algorithms. The different supported knowledge types are explained below,
+along with examples of how to create <code>Knowledge</code> objects and
+use them with causal discovery methods. All knowledge types can be
+freely combined. Multiple calls or operators are additive: each call
+adds new edges to the <code>Knowledge</code> object. For example if we
+require an edge from <code>A</code> to <code>B</code> and then require
+an edge from A to C, the resulting <code>Knowledge</code> object will
+require both edges from <code>A</code> to <code>B</code> and from
+<code>A</code> to <code>C</code>.</p>
+<p>At a conceptual level, all knowledge is represented as constraints on
+edges, specifying which edges are required and forbidden. Some knowledge
+types provide higher-level abstractions for expressing common modeling
+assumptions more conveniently.</p>
+<div id="required-and-forbidden-knowledge" class="section level1">
+<h1>Required and forbidden knowledge</h1>
+<p>At the most basic level, prior knowledge is expressed as required or
+forbidden edges between variables. These constraints apply to directed
+edges in the causal graph.</p>
+<ul>
+<li>Required edges specify that a directed edge must exist between two
+variables.</li>
+<li>Forbidden edges specify that a directed edge is not allowed between
+two variables.</li>
+</ul>
+<p>These constraints are specified using the <code>%--&gt;%</code>
+(required) and <code>%!--&gt;%</code> (forbidden) operators, with the
+exclamation mark (<code>!</code>) indicating negation of the edge,
+i.e. the absence of the edge. Conceptually, this could be written as
+<code>%!(--&gt;)%</code>, but we find this syntax too verbose.</p>
+<div id="specifying-required-and-forbidden-edges" class="section level2">
+<h2>Specifying required and forbidden edges</h2>
+<p>Suppose we want to require an edge from A to B, from A to C, and
+forbid an edge from B to C:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>kn_1 <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  A <span class="sc">%--&gt;%</span> <span class="fu">c</span>(B, C), <span class="co"># Require edges from A to B and A to C</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  B <span class="sc">%!--&gt;%</span> C <span class="co"># Forbid edge from B to C</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>)</span></code></pre></div>
+<p>This <code>Knowledge</code> object can be visualized:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">plot</span>(kn_1)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>The blue edge represents the required edge from A to B, while the red
+edge represents the forbidden edge from B to C.</p>
+<p>If one wishes to remove some edges (either required or forbidden)
+knowledge from an existing <code>Knowledge</code> object, the
+<code>remove_edge()</code> function can be used. For example, to remove
+the required edge from A to B:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>kn_1_removed <span class="ot">&lt;-</span> <span class="fu">remove_edge</span>(kn_1, <span class="at">from =</span> A, <span class="at">to =</span> B)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">plot</span>(kn_1_removed)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="specifying-required-and-forbidden-edges-in-a-dataset" class="section level2">
+<h2>Specifying required and forbidden edges in a dataset</h2>
+<p>We will use the <code>tpc_example</code> dataset from the causalDisco
+package for the following examples:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">data</span>(tpc_example)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">head</span>(tpc_example)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt;   child_x2   child_x1    youth_x4 youth_x3  oldage_x6  oldage_x5</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; 1        0 -0.7104066 -0.07355602        1  6.4984994  3.0740123</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; 2        0  0.2568837 -1.16865142        1  0.3254685  1.9726530</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; 3        0 -0.2466919 -0.63474826        1  4.1298927  1.9666697</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; 4        1  1.6524574  0.97115845        0 -7.9064009 -4.5160676</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; 5        0 -0.9516186  0.67069597        0  1.7089134  0.7903853</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; 6        1  1.9549723 -0.65054654        0 -6.9758928 -3.2107342</span></span></code></pre></div>
+<p>We can pass the dataset to <code>knowledge</code> as the first
+argument, which also checks that the specified variables exist in the
+dataset:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>kn_2 <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  tpc_example,</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  child_x1 <span class="sc">%--&gt;%</span> youth_x3, <span class="co"># Require edge from child_x1 to youth_x3</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  child_x2 <span class="sc">%!--&gt;%</span> oldage_x5 <span class="co"># Forbid edge from child_x2 to oldage_x5</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>)</span></code></pre></div>
+<p>This <code>Knowledge</code> object can also be visualized (we
+manually adjust the layout for better appearance):</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>cg <span class="ot">&lt;-</span> <span class="fu">knowledge_to_caugi</span>(kn_2)<span class="sc">$</span>caugi</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>layout <span class="ot">&lt;-</span> caugi<span class="sc">::</span><span class="fu">caugi_layout_sugiyama</span>(cg)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>layout[<span class="dv">6</span>, <span class="dv">2</span>] <span class="ot">&lt;-</span> layout[<span class="dv">4</span>, <span class="dv">2</span>]</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="fu">plot</span>(kn_2, <span class="at">layout =</span> layout)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>The plot then plots all variables in the dataset, with the required
+edges as blue edges and forbidden edges as red edges.</p>
+<div id="using-tidyselect-helpers" class="section level3">
+<h3>Using tidyselect helpers</h3>
+<p>To make specifying variables easier, you can use tidyselect helpers
+such as <code>starts_with</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>kn_3 <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  tpc_example,</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="fu">starts_with</span>(<span class="st">&quot;child&quot;</span>) <span class="sc">%--&gt;%</span> <span class="fu">starts_with</span>(<span class="st">&quot;youth&quot;</span>),</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="fu">starts_with</span>(<span class="st">&quot;oldage&quot;</span>) <span class="sc">%!--&gt;%</span> <span class="fu">starts_with</span>(<span class="st">&quot;youth&quot;</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>)</span></code></pre></div>
+<p>This means, that all variables starting with “child” are required to
+have edges to all variables starting with “youth”, and no variables
+starting with “oldage” can have edges to any variables starting with
+“youth”. We can visualize this:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">plot</span>(kn_3)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>For a list of all available tidyselect helpers we refer to the <a href="https://tidyselect.r-lib.org/reference/index.html">tidyselect
+reference documentation</a>.</p>
+</div>
+</div>
+</div>
+<div id="tiered-knowledge" class="section level1">
+<h1>Tiered knowledge</h1>
+<p>Tiered knowledge provides a higher-level abstraction for expressing
+systematic ordering assumptions, such as temporal or logical precedence.
+Internally, tiered knowledge is translated into a collection of
+forbidden edges, but it is exposed separately because it provides a
+concise and structured way to express common ordering assumptions.</p>
+<p>For example, consider a dataset with three groups of variables:
+child, youth, and old. We may wish to enforce that child variables
+precede youth variables, which in turn precede old variables. This can
+be expressed using tiered knowledge.</p>
+<p>Tiered knowledge enforces that edges may only point from earlier
+tiers to later tiers. Edges within the same tier are unrestricted unless
+additional knowledge is supplied.</p>
+<div id="creating-a-tiered-knowledge-object" class="section level2">
+<h2>Creating a tiered <code>Knowledge</code> object</h2>
+<p>Suppose we observe variables over time: first the <code>A</code>’s,
+then the <code>B</code>’s, and finally the <code>C</code>’s. This
+ordering implies that causal direction cannot go backward in time (e.g.,
+<code>B</code>’s cannot cause <code>A</code>’s). A tiered
+<code>Knowledge</code> object captures this temporal structure by
+specifying tiers and their associated variables. If numeric tiers are
+used, lower numbers indicate earlier tiers; otherwise, tiers are ordered
+by their appearance.</p>
+<p>The following specifications encode the same tier structure:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>kn <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="fu">tier</span>(</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>    <span class="dv">1</span> <span class="sc">~</span> <span class="fu">c</span>(A1, A2),</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>    <span class="dv">2</span> <span class="sc">~</span> <span class="fu">c</span>(B1, B2),</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>    <span class="dv">3</span> <span class="sc">~</span> <span class="fu">c</span>(C1, C2)</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  )</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>)</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co"># Same object, since tiers are ordered numerically</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>kn_same <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  <span class="fu">tier</span>(</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>    <span class="dv">1</span> <span class="sc">~</span> <span class="fu">c</span>(A1, A2),</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>    <span class="dv">3</span> <span class="sc">~</span> <span class="fu">c</span>(C1, C2),</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>    <span class="dv">2</span> <span class="sc">~</span> <span class="fu">c</span>(B1, B2)</span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>  )</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>)</span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a><span class="co"># Functionally equivalent, though not identical</span></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>kn_almost <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a>  <span class="fu">tier</span>(</span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a>    <span class="dv">10</span> <span class="sc">~</span> <span class="fu">c</span>(A1, A2),</span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a>    <span class="dv">30</span> <span class="sc">~</span> <span class="fu">c</span>(C1, C2),</span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a>    <span class="dv">20</span> <span class="sc">~</span> <span class="fu">c</span>(B1, B2)</span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a>  )</span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a>)</span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a></span>
+<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a><span class="co"># Again functionally equivalent</span></span>
+<span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a>kn_also_almost <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a>  <span class="fu">tier</span>(</span>
+<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a>    A <span class="sc">~</span> <span class="fu">c</span>(A1, A2),</span>
+<span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a>    B <span class="sc">~</span> <span class="fu">c</span>(B1, B2),</span>
+<span id="cb10-32"><a href="#cb10-32" tabindex="-1"></a>    C <span class="sc">~</span> <span class="fu">c</span>(C1, C2)</span>
+<span id="cb10-33"><a href="#cb10-33" tabindex="-1"></a>  )</span>
+<span id="cb10-34"><a href="#cb10-34" tabindex="-1"></a>)</span>
+<span id="cb10-35"><a href="#cb10-35" tabindex="-1"></a></span>
+<span id="cb10-36"><a href="#cb10-36" tabindex="-1"></a><span class="co"># Has a letter, so tiers are ordered by appearance, thus functionally equivalent</span></span>
+<span id="cb10-37"><a href="#cb10-37" tabindex="-1"></a>kn_mixed <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb10-38"><a href="#cb10-38" tabindex="-1"></a>  <span class="fu">tier</span>(</span>
+<span id="cb10-39"><a href="#cb10-39" tabindex="-1"></a>    <span class="dv">3</span>   <span class="sc">~</span> <span class="fu">c</span>(A1, A2),</span>
+<span id="cb10-40"><a href="#cb10-40" tabindex="-1"></a>    B   <span class="sc">~</span> <span class="fu">c</span>(B1, B2),</span>
+<span id="cb10-41"><a href="#cb10-41" tabindex="-1"></a>    <span class="dv">1</span>   <span class="sc">~</span> <span class="fu">c</span>(C1, C2)</span>
+<span id="cb10-42"><a href="#cb10-42" tabindex="-1"></a>  )</span>
+<span id="cb10-43"><a href="#cb10-43" tabindex="-1"></a>)</span></code></pre></div>
+<p>We can visualize the tiers:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">plot</span>(kn)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>The plot then shows the tiers as layers, with the earliest tiers to
+the left and latest to the right.</p>
+<p>We can convert the meaning of the tiered knowledge into explicit
+forbidden edges using <code>convert_tiers_to_forbidden()</code>:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>kn_converted <span class="ot">&lt;-</span> <span class="fu">convert_tiers_to_forbidden</span>(kn)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">print</span>(kn_converted)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt; ── Knowledge object ────────────────────────────────────────────────────────────</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt; ── Variables ──</span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#&gt;   [1mvar[22m   [1mtier[22m </span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt; &lt;chr&gt;</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt; 1 A1    &lt;NA&gt; </span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt; 2 A2    &lt;NA&gt; </span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="co">#&gt; 3 B1    &lt;NA&gt; </span></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co">#&gt; 4 B2    &lt;NA&gt; </span></span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a><span class="co">#&gt; 5 C1    &lt;NA&gt; </span></span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a><span class="co">#&gt; 6 C2    &lt;NA&gt;</span></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co">#&gt; ── Edges ──</span></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a><span class="co">#&gt;  ✖  B1 → A1</span></span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a><span class="co">#&gt;  ✖  B1 → A2</span></span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a><span class="co">#&gt;  ✖  B2 → A1</span></span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a><span class="co">#&gt;  ✖  B2 → A2</span></span>
+<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a><span class="co">#&gt;  ✖  C1 → A1</span></span>
+<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a><span class="co">#&gt;  ✖  C1 → A2</span></span>
+<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a><span class="co">#&gt;  ✖  C1 → B1</span></span>
+<span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a><span class="co">#&gt;  ✖  C1 → B2</span></span>
+<span id="cb12-25"><a href="#cb12-25" tabindex="-1"></a><span class="co">#&gt;  ✖  C2 → A1</span></span>
+<span id="cb12-26"><a href="#cb12-26" tabindex="-1"></a><span class="co">#&gt;  ✖  C2 → A2</span></span>
+<span id="cb12-27"><a href="#cb12-27" tabindex="-1"></a><span class="co">#&gt;  ✖  C2 → B1</span></span>
+<span id="cb12-28"><a href="#cb12-28" tabindex="-1"></a><span class="co">#&gt;  ✖  C2 → B2</span></span>
+<span id="cb12-29"><a href="#cb12-29" tabindex="-1"></a><span class="fu">plot</span>(kn_converted)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>Tidyselect helpers such as <code>starts_with</code> can also be used
+to define tiers in a concise way, just as with required and forbidden
+edges. Different tidyselect helpers can be freely combined within a tier
+definition using <code>+</code>. For example, the following tiered
+<code>Knowledge</code> object defines two tiers, “young” and “old”, by
+combining tidyselect helpers:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>kn_tier_tidyselect <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>  tpc_example,</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  <span class="fu">tier</span>(</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>    young <span class="sc">~</span> <span class="fu">starts_with</span>(<span class="st">&quot;child&quot;</span>) <span class="sc">+</span> <span class="fu">ends_with</span>(<span class="fu">c</span>(<span class="st">&quot;3&quot;</span>, <span class="st">&quot;4&quot;</span>)),</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>    old   <span class="sc">~</span> <span class="fu">starts_with</span>(<span class="st">&quot;old&quot;</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  )</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>)</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="fu">plot</span>(kn_tier_tidyselect)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+</div>
+</div>
+<div id="exogenous-variables-knowledge" class="section level1">
+<h1>Exogenous variables knowledge</h1>
+<p>Exogenous variables are those that have no incoming edges in the
+causal graph. That is, variables which are known causes but are not
+affected by other variables. Exogenous variables can be specified using
+the <code>exogenous()</code> function within
+<code>knowledge()</code>.</p>
+<div id="specifying-exogenous-variables" class="section level2">
+<h2>Specifying exogenous variables</h2>
+<p>The most natural usage is to supply the dataset so that the variables
+are checked for existence and selected correctly:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>kn_exo_1 <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>  tpc_example,</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>  <span class="fu">exogenous</span>(<span class="st">&quot;child_x1&quot;</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>)</span></code></pre></div>
+<p>Instead of <code>exogenous</code>, you can also use the shorthand
+function <code>exo()</code>. This <code>knowledge</code> object can be
+visualized:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">plot</span>(kn_exo_1)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>Below we add both <code>child_x1</code> and <code>child_x2</code> as
+exogenous variables using tidyselect helpers:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>kn_exo_2 <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>  tpc_example,</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>  <span class="fu">exo</span>(<span class="fu">starts_with</span>(<span class="st">&quot;child&quot;</span>))</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>)</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="fu">plot</span>(kn_exo_2, <span class="at">layout =</span> <span class="st">&quot;bipartite&quot;</span>, <span class="at">orientation =</span> <span class="st">&quot;columns&quot;</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+</div>
+</div>
+<div id="combining-different-knowledge-types" class="section level1">
+<h1>Combining different knowledge types</h1>
+<p>Different knowledge types can be freely combined in a single
+<code>knowledge</code> object. For example, we can combine tiered
+knowledge with required and forbidden edges:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>kn_combined <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>  tpc_example,</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>  <span class="fu">tier</span>(</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>    <span class="dv">1</span> <span class="sc">~</span> <span class="fu">starts_with</span>(<span class="st">&quot;child&quot;</span>),</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>    <span class="dv">2</span> <span class="sc">~</span> <span class="fu">starts_with</span>(<span class="st">&quot;youth&quot;</span>),</span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>    <span class="dv">3</span> <span class="sc">~</span> <span class="fu">starts_with</span>(<span class="st">&quot;oldage&quot;</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>  ),</span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>  child_x1 <span class="sc">%--&gt;%</span> youth_x3,</span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a>  child_x1 <span class="sc">%!--&gt;%</span> child_x2</span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a>)</span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a></span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="fu">plot</span>(kn_combined)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="using-knowledge-with-causal-discovery" class="section level1">
+<h1>Using knowledge with causal discovery</h1>
+<p>Once prior knowledge has been specified, it can be supplied to causal
+discovery algorithms by passing the <code>knowledge</code> object to the
+<code>disco()</code> function via the <code>knowledge</code> parameter.
+For example, we can use the Temporal GES algorithm <code>tges()</code>
+with engine “causalDisco” and temporal BIC (“tbic”):</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>kn <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>  tpc_example,</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>  <span class="fu">tier</span>(</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>    <span class="dv">1</span> <span class="sc">~</span> <span class="fu">starts_with</span>(<span class="st">&quot;child&quot;</span>),</span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>    <span class="dv">2</span> <span class="sc">~</span> <span class="fu">starts_with</span>(<span class="st">&quot;youth&quot;</span>),</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>    <span class="dv">3</span> <span class="sc">~</span> <span class="fu">starts_with</span>(<span class="st">&quot;oldage&quot;</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>  )</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>)</span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a>cd_tges <span class="ot">&lt;-</span> <span class="fu">tges</span>(<span class="at">engine =</span> <span class="st">&quot;causalDisco&quot;</span>, <span class="at">score =</span> <span class="st">&quot;tbic&quot;</span>)</span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a>disco_cd_tges <span class="ot">&lt;-</span> <span class="fu">disco</span>(<span class="at">data =</span> tpc_example, <span class="at">method =</span> cd_tges, <span class="at">knowledge =</span> kn)</span></code></pre></div>
+<p>The causal discovery algorithms respects the provided knowledge. We
+can plot the resulting causal graph:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="fu">plot</span>(disco_cd_tges)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAAq1BMVEUAAAAAADAAADoAAFUAAGYAMHcAOpAAVZYAZrYwAAAwADAwAFUwMDAwMHcwd7U6AAA6AGY6kNtVAABVADBVVVVVd3dVlpZVltNmAABmtv93MAB3VQB3d1V3tZZ3tdOQOgCQ2/+WVQCWllWWtXeW05aW09OwxN61dzC105a107W109O2ZgC2///TllXTtXfT05bT07XT09PbkDrb////tmb/25D//7b//9v////VffPhAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAOaUlEQVR4nO2dfYPbJhLGldvu7W2auhdvW/d87abqi9Qm1dreS5v9/p/sQAgECPEyDDYmzB/7IlsPMz9gAFnCzUs1qzWXdiB3q4AcVgE5rAJyWAXksArIYRWQwyoghxUM6Llp/vFTtEq5gJ6/+PPlYzyhYgH9/f3bl5dP7/4Vq1MsoNEqIIc91y5ms49N8zZaJBtAn941GPHoov/8X6RELoA+vSO94bmJThmaxQ9jcEB//fvPyLIVta//88KGZlRjsjEGBvT399jBvGBUuDCG5mO0k1BAJAEmAPQBUfMDST+f3kVnNSCgj83b+MoxqSKqfSBZP7aDxeQgfEAf0XM0gmUECLf9YFk+gJ6z5JMPoGeEfJHCcgH019dZtp98AD03o+HNg7AsF0DZWgXksFwWq9laBeSwKwDUXcR46RVQBVQBVUAVkNWKBHSZoDCtAnKYDujS/mRnFZDDKiCHVUAOq4AcVgE5rAJyWAXksOIBNcJg5xcMiGE5CYNhKhWQgka2UEZFAlqlA2BUICA7Hc7IV604QD54QhDlBihy0PHF448oI0CmQSdUwh/PWISHZByg2EmGomSu5QDlkObj3YjAgBDqW9ayBeGpG4xnVHepwgBh1HdAZF6qID5ubQgge337KPiqBagC+TgJhQNyBRSGCGlUPoH5uAiFAsKdhYXUu000ho+DUBggX0c8CYXFZeEexcfubhAg/3HUqxEFD8tropF8rIRCAIXVt5sPViDRfGzeBgBCnqaiTVsQ+Fi89QcUPk3F52MSReGz7q03ILQOERnWQjQTQMjz+IhxWRNF4rPqrCcg7Hk82rwOjc+as36AsOfxePO6MgHhzesQ+aw46wUIe6FTGiDshQ7exBeVj5lQBWTSDQOEvRLEWxkg8zESOj8gxJVBHoCwl8oVkKNUPEDofEyEnICwryUgLp0qIIdmBWTXTMDn1C0IuQBheNGlmPo2SQAtm9A5ACVZG1RATs0KyKFZATk0swCkOXHY7sRv/vdpePVoKurpy9/4n3OWdgU1SLoL65tmLmoh5fJnzQ5bemPK3cLVKEAeDh22N+GAFPC69URwLgsN0NNr+e1nAzQ0zQzI+/qEDdBhuzmdjnte1YvL/lBAg+TnadnHfAH1YzM8bL+9b5rdHAht9T9IDtFappEMzWawAGppmP3dyLHZTMEx8dvfpzIWmtRMgGQN4U/bTBotP9Kzty1k+7uTbEBAPSmCqB225Df5mwNqaauXEgMJgJR4+16vGR0Qfe2435Fzqc4dB7RjuqwMk6Z8nLsmawh/aA2M7xVH6H9P9xIhLtu+UcjBAPEKHH8/3U+B7MhftI7kJj3c/PrwKCCsAaLnk75PfRy7hAqIlWHQHJRI5ji5hvDnQN9P/5uPjBEo3YnJHraUfSt0YYC4v2ogO1ae2udbPiDYANEaJrXHZCfgku5JS0RCk+CYmpIAJGso/gy0j4kj7KDCXZKVnAUCmjK9FkhvADTw9DHYRjHyIqk05u+kZwE0zClJFKbWHTt39ocknJtfyCviyDDdjbsiK8gBRzH/FnTcfzOBsQI6PPz48HjybEGzphKJfEBrQeNB+kNrQYopsq8F98gcpATCnJMTKuk4f+w3bkDH/RvSV6T8oeQ2DRDTZIUJ1W41BxF/xnfRBiKOGCYPK7JhgLgbFAIZYvWapoeVUYwenAqTABmWGv2YbvkIRFPLcd/sKKgFIK7ZCqRMk4+I0ijG/aFRkxnyRhvFlPFEyNJE1M6yMEBiHqR1BX0exIK4cwOa2vQ0hxnn+9/RcZrOgzRAQrOVc8i8FjPNg8ZVSTtNiG5+pq7QCORBbE0WCCjKTIC+em89xUPT3zVtsmyXvQAg0xXFfmM9xW1+gMYMwzOon2wKQE/30yBqXgUtAT3d37oakFvTy7VBG9sDXPUDVC/aXy+gYj726RIA6vIB9Fl99LzsYWcApBda3M0LOd7+0hUEaNlq8bIaNiBDD6u34Bl1zwjIVCl4WQ0XkMnX1LcBG8ss7jbgzG4kT3KzyGmtMtMCMpeJ2WkRCcU8igD0Y41Plg+zrDjrCQjkyDqfiMCSzDstzvoCAjhi44PYaRFXv1GAgh2x8kHstIir3zhAgZ44+CB2WuyLnmBAQZ44+WB1WnUTGqBZvA0BdOmNBbQw5r2LsC84gAH51rpH8wmR46Ky6ry1E8KlM5u7gYB8ar1LsrnJYnhXNr/CXk/DATkRheBxq1lU1d3BsJeLEYCsQQXi8URkVNV2T8NeDXGDABqd65ZFdYm26FqJQdteDns1NBkMEHev6yY0neJrqNlG6lXqjV4m9mqIGRgQjyzpNoGWNtlMxSsawXjcfscBEq5iWFCbbPgZ6lHk5tNlBYiJebVJ/uriXQGNyHM8yQ1QYImGtSt43mC2awTkKBB3LnuFgDyWwVZGYbORqwPkGZxxpgaZq10boIDCGtOwGOzslQEKLyt2qnZdgKBFRbh4TYAi1jLwQq8IUEQ5nwWgmGI+B0BRpZQPKPJyQfGAYosoHVD81Sb4qdcAKL6AogHFX60sGxCKesGAcMTLBYSkXSogjPTDhOCn5gwIT7hMQIi6RQLClC0QEFr6YWrwUzMFhKxZHCBsydIAoSuWBQg3/TBJ+Kn5AcospWUHKM2YCD81N0BpJlXFAEqQfpgu/NSsAOW4qssJUMLLAvBTMwKU8LpSCYBSpR8mDj81F0DZXtjOBFDqT0bgp+YBKOVV28g7qHIAlDb9XP8dZonTz9UDSv3JdeTTJBcHlP6T/asGlDT9iDJiHke6LKAz3Zx2tYDOdXdjzPNslwR0xvuHrxHQOdIPQlEXA3S2u6uvdB50ttFrftLnqh5mOcfsx/y02FU8DpU6/dgfqAtjdAlAyfE4Hsg8ee5OM9oFAKVenLrxhCA6PyD72yMHnZC9BfJ8LNy2V4Bh0Al1xR/PWISHZByg4Ppefd9KXg1iFL5XV8qtKUD1vfIO66jjzQi0/YtTGwYIWN9rfKKj8FKBaUMA2evbclqwmoeqkIHxcRIKB+QKaC0YOB4PRIuvhEQjFAoIXN8rfHDiiOGDusmbryPLIo1OhMVl670QLjZ3gYDAG02aYwseltcCwf7qDyigsPqWT8QKC03ITzgQEHiaihiWMbtBhHyEAwGFT1Px+RizG0zILRwICNoh1mY/aIFkAgjaIVbKjRiXGwTHPHQDAUE7RIJxp8ESsguHAcKex+PN68oEVNw3s2AvdEoDVL8dqgLSdMMAYa8E8VYG2F/AVs5X+GX1HYfYS+UKyFEqHiB0Phf6Itr6Tb1BpVZAjlLxACXgA/gybOyvXkJcfKcAlOj75gNKrYAcpVZAjlIrIEeppQHSnDhsd+I3//s0vHpclHPcN02zEaV6f0XRIOmarL19P/21kLL6Y7On+6a54/8shjEYIJdDxz051oti51tjHIAU8AYbGnxAA5E8bLmrZwL0dE9f629+m/4Xdw/FATpsZ0CLy/5AQMf9RnUVCKhvaDs8bL8l7XE3B0IOv/pBcogWdNhudE/FXWiTXksrrL+jTWLsiaMWE7/9fSrDoNnf/tcASNYQ/rTNpNHyI73c6WfZp9cqTiCgnhRB1A5b2nVePXJALSlkaCRAtD56HkSrtqBm/rrGgbxy3O/IubuxeU+AdkyXlbHUJLG0S0CyhvCH1sCoIY7Q/57uJUKT7HDz61YmBwPEG8X4m/SfCRDrSa3cpEl5D4/cczlLN/KTAfR8Ei5r3gMDPgPa8D6qatJ3LwHJGsKfA30//W8+MkYwiCoTsn0zVpbI0jBA3F81kB0rT+3zLU/Nwzw0LFoQrWFSe0x2Ai7pnrRExDRpK1oCkjUUfwbax8QRdlDhzmRZWx0icxDvqFogvQHQMKWPQW62eg6iDrWbyd9JzwJo1Bx9WA7zssbsD0k4N7+QV8SRYfJhIcveIcgBRzH/FnTcfzMe7OWEON8CywEdHn58eDx5tiCm2ashdrYWNB6kP7QWpBiTZe8QqRoIaM5BSiDTaC6X3d/+QZNCr1TVcqJ43L8hbUHKH0pu0wBNmtSWLWiZg4g/Y9S0gYgjhskDk2UviC4WCoi7QSGQTKbXND2sjGL0IClMGS6MSw3WwvgIdNzfvieT7x0FtQA0aWqA5hFRGsW4P5QLmTRttFFMGU+4bC9qSnM1CJCYB2ldQZ8HtWNpd1N34C8YAE1teprD0Gia7+g4TedBGqBJcw2QcR5Efz+204To5meKl/okD2JClvsQByjKTIC+em89xUPT3zVldHfJXgCQ6Ypiv7Ge4jY/QGMOElN7L9kUgOh6WOlTqi0BPd3fuhqQW9PLtUEb2wNc9QNUL9pfL6BiPvbpEgDq8gH0WX30bLjnND0gvdDibl7I8faXriBAy1aLl9WwAZnu6vYAVG/BSwnIVCl4WQ0XkPGxAB9AEX6YH0Uo7TbgzG4kT3KzyGmtMtMCAj8I7q2JSCjmUQSgH5aNFrDiwAO04qwnIJAjtl09wIElmXdanPUFBHDEuusJXqdFXP1GAQp2xLUPDigMgyji6jcOUKAnzl1z0Dot9kVPMKAgTzx2FULrtNhXZMCA4BsLxMo5wsC+4AAG5OuK96ZUYW1yXRX5gkMEIJ9aD9kF0D8yO3Ts9TQckBNR4CaJnt3MqYq9XBQWDsgaFGAPSaQ2ib0a4gYB1I37Dy+Lgm5L7IrNL6Vhr4YmgwHqOr7N94Qmbtdv2yZv/tSxV0PMwIB4ZDHbQqpKUXSYRjAet3ocIFRDaJPIk31qGQEaLbJNBjQiz/EkN0DRhjVv4FYcIOy5bIGA7KNiaOYvElC3MlODzNVKBdTxfK8Ni8G5v2BAzGKnasUDirUKyGEVkMMqIIdVQA6rgBxWATlMB4Rslw4v3ioghyUGhGkVkMMqIIdVQA6rgBxWATmsAsraKiCHVUAOq4AcVgE5rAJyWAXksArIYf8HOrmI+2JPCu4AAAAASUVORK5CYII=" /><!-- --></p>
+<p>The black edges are those inferred from the data.</p>
+</div>
+<div id="engine-specific-information-about-knowledge" class="section level1">
+<h1>Engine specific information about knowledge</h1>
+<p>By engine we mean the underlying implementation of the causal
+discovery algorithm, i.e. the engine you specify to an algorithm such as
+<code>pc(engine = &quot;bnlearn&quot;)</code> or
+<code>tges(engine = &quot;causalDisco&quot;)</code>.</p>
+<div id="bnlearn" class="section level2">
+<h2>bnlearn</h2>
+<p>All knowledge types are supported with bnlearn engine. When required
+knowledge is provided, bnlearn may emit a warning during structure
+learning. This occurs when the algorithm identifies a candidate
+v-structure (collider) from the data whose orientation conflicts with
+edges already oriented due to background knowledge.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">data</span>(tpc_example)</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>kn <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>  tpc_example,</span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>  child_x1 <span class="sc">%--&gt;%</span> youth_x3</span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>)</span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a></span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a>bnlearn_pc <span class="ot">&lt;-</span> <span class="fu">pc</span>(<span class="at">engine =</span> <span class="st">&quot;bnlearn&quot;</span>, <span class="at">test =</span> <span class="st">&quot;fisher_z&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.05</span>)</span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a>output <span class="ot">&lt;-</span> <span class="fu">disco</span>(<span class="at">data =</span> tpc_example, <span class="at">method =</span> bnlearn_pc, <span class="at">knowledge =</span> kn)</span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="co">#&gt; Warning in vstruct.apply(arcs = arcs, vs = vs, nodes = nodes, debug = debug):</span></span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="co">#&gt; vstructure child_x2 -&gt; oldage_x5 &lt;- youth_x3 is not applicable, because one or</span></span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a><span class="co">#&gt; both arcs are oriented in the opposite direction.</span></span></code></pre></div>
+<p>The resulting causal graph will still respect the provided
+knowledge.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">plot</span>(output)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="causaldisco" class="section level2">
+<h2>causalDisco</h2>
+<p>causalDisco engine only supports tiered and forbidden knowledge. If
+required knowledge is provided, it will give a warning and ignore the
+required knowledge.</p>
+</div>
+<div id="pcalg" class="section level2">
+<h2>pcalg</h2>
+<p>Only forbidden symmetric knowledge is supported for pcalg engine.
+That is, edges that are forbidden in both directions. Thus, the only
+type of knowledge that can be used with pcalg is knowledge created using
+forbidden edges (<code>%!--&gt;%</code>) without any required or tier
+knowledge. An example is shown below:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu">data</span>(tpc_example)</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>kn <span class="ot">&lt;-</span> <span class="fu">knowledge</span>(</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>  tpc_example,</span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>  child_x1 <span class="sc">%!--&gt;%</span> youth_x3,</span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a>  youth_x3 <span class="sc">%!--&gt;%</span> child_x1</span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>)</span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a>pc_pcalg <span class="ot">&lt;-</span> <span class="fu">pc</span>(<span class="at">engine =</span> <span class="st">&quot;pcalg&quot;</span>, <span class="at">test =</span> <span class="st">&quot;fisher_z&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.05</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a>output <span class="ot">&lt;-</span> <span class="fu">disco</span>(<span class="at">data =</span> tpc_example, <span class="at">method =</span> pc_pcalg, <span class="at">knowledge =</span> kn)</span></code></pre></div>
+</div>
+<div id="tetrad" class="section level2">
+<h2>Tetrad</h2>
+<p>All knowledge types are supported with Tetrad engine.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Extending causalDisco with new algorithms</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Extending causalDisco with new
+algorithms</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(causalDisco)</span></code></pre></div>
+<p>This vignette illustrates how to add a new algorithm to
+<code>causalDisco</code> from bnlearn, pcalg and Tetrad. Both bnlearn
+and pcalg are R packages and therefore share the same interface, while
+Tetrad is a Java library and requires a slightly different integration
+pattern.</p>
+<div id="bnlearn-and-pcalg" class="section level1">
+<h1>bnlearn and pcalg</h1>
+<p>Suppose we want to add the Hybrid Parents and Children (HPC)
+algorithm from bnlearn. We can integrate it into causalDisco by creating
+a new function <code>hpc()</code>.</p>
+<p>HPC is a constraint-based algorithm, so it requires a conditional
+independence test and a significance level alpha. It returns a PDAG, so
+we set the <code>graph_class</code> attribute to
+<code>&quot;PDAG&quot;</code>.</p>
+<p>The function takes an <code>engine</code> argument, which specifies
+which implementation of the algorithm to use. Even though we only add
+HPC from bnlearn in this example, we set up the structure to allow for
+multiple engines in the future. The <code>...</code> argument allows us
+to pass additional arguments to the underlying algorithm and test.</p>
+<p>The code for the <code>hpc()</code> function is as follows:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>hpc <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="at">engine =</span> <span class="fu">c</span>(<span class="st">&quot;bnlearn&quot;</span>),</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  test,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.05</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  ...</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>) {</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  engine <span class="ot">&lt;-</span> <span class="fu">match.arg</span>(engine)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  args <span class="ot">&lt;-</span> rlang<span class="sc">::</span><span class="fu">list2</span>(...)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  builder <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">knowledge =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>    runner <span class="ot">&lt;-</span> <span class="cf">switch</span>(</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>      engine,</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>      <span class="at">bnlearn =</span> rlang<span class="sc">::</span><span class="fu">exec</span>(</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>        hpc_bnlearn_runner,</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>        <span class="at">test =</span> test,</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>        <span class="at">alpha =</span> alpha,</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>        <span class="sc">!!!</span>args</span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>      )</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>    )</span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>    runner</span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>  }</span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>  method <span class="ot">&lt;-</span> <span class="fu">new_disco_method</span>(</span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>    <span class="at">builder =</span> builder,</span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;hpc&quot;</span>,</span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>    <span class="at">engine =</span> engine,</span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a>    <span class="at">graph_class =</span> <span class="st">&quot;PDAG&quot;</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a>  )</span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a>  method</span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>}</span></code></pre></div>
+<p>We see that the <code>hpc()</code> function needs two components:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Builder function:</strong> Constructs a <em>runner</em>
+for the algorithm. It configures the algorithm with the provided
+parameters and optional background knowledge.</p></li>
+<li><p><strong>Method object:</strong> Created via
+<code>new_disco_method()</code>. It encapsulates the builder and
+metadata about the method. This allows us to be able to call
+<code>disco()</code> to execute the algorithm on a dataset.</p></li>
+</ol>
+<p>Next, we define the runner. The runner handles configuring the search
+object with the chosen test, alpha level, and any additional arguments,
+and it actually runs the search on the data when called. For bnlearn
+algorithms, we use the <code>BnlearnSearch</code> R6 class to manage
+search configuration and execution. We also use
+<code>distribute_engine_args()</code> to determine which extra arguments
+should be passed to the test, the algorithm, or both.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>hpc_bnlearn_runner <span class="ot">&lt;-</span> <span class="cf">function</span>(test, alpha, ...) {</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  args <span class="ot">&lt;-</span> <span class="fu">list</span>(...)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  search <span class="ot">&lt;-</span> BnlearnSearch<span class="sc">$</span><span class="fu">new</span>()</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  args_to_pass <span class="ot">&lt;-</span> <span class="fu">distribute_engine_args</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>    <span class="at">search =</span> search,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>    <span class="at">args =</span> args,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>    <span class="at">engine =</span> <span class="st">&quot;bnlearn&quot;</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>    <span class="at">alg =</span> <span class="st">&quot;hpc&quot;</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  )</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  search<span class="sc">$</span><span class="fu">set_test</span>(test, alpha)</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>  search<span class="sc">$</span><span class="fu">set_alg</span>(<span class="st">&quot;hpc&quot;</span>, args_to_pass)</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>  runner <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>    <span class="at">set_knowledge =</span> <span class="cf">function</span>(knowledge) {</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>      search<span class="sc">$</span><span class="fu">set_knowledge</span>(knowledge)</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>    },</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>    <span class="at">run =</span> <span class="cf">function</span>(data) {</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>      search<span class="sc">$</span><span class="fu">run_search</span>(data)</span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>    }</span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>  )</span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>  runner</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>}</span></code></pre></div>
+<p>Once defined, the HPC algorithm can be used like any other method in
+causalDisco. We first construct the method using <code>hpc()</code>, and
+then pass it to <code>disco()</code>. Here we demonstrate using the
+included <code>tpc_example</code> dataset:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">data</span>(tpc_example)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>hpc_bnlearn <span class="ot">&lt;-</span> <span class="fu">hpc</span>(<span class="at">engine =</span> <span class="st">&quot;bnlearn&quot;</span>, <span class="at">test =</span> <span class="st">&quot;fisher_z&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.05</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>hpc_bnlearn_result <span class="ot">&lt;-</span> <span class="fu">disco</span>(tpc_example, hpc_bnlearn)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="fu">plot</span>(hpc_bnlearn_result)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>To implement a <strong>score-based</strong> algorithm instead, the
+structure would remain the same. The main difference is that the method
+would accept a <code>score</code> argument rather than <code>test</code>
+and <code>alpha</code>, and the runner would call
+<code>search$set_score()</code> instead of
+<code>search$set_test()</code>. A <strong>hybrid</strong> algorithm
+algorithm would accept <code>test</code>, <code>alpha</code>, and
+<code>score</code> arguments, and the runner would call both
+<code>set_test()</code> and <code>set_score()</code>.</p>
+<p>To implement an algorithm from pcalg rather than bnlearn, we would
+follow the same structure but use the R6 class <code>PcalgSearch</code>
+instead of <code>BnlearnSearch</code> in the runner (i.e.,
+<code>PcalgSearch$new()</code>).</p>
+</div>
+<div id="tetrad" class="section level1">
+<h1>Tetrad</h1>
+<p>We will illustrate how to make a custom version (which actually does
+the same as our implementation, just with some defensive programming
+omitted) of the Boss algorithm from Tetrad. Tetrad algorithms follow a
+slightly different integration pattern because Tetrad is a Java library
+rather than an R package.</p>
+<p>To add a new Tetrad algorithm, first register it with
+<code>register_tetrad_algorithm()</code>. This function requires:</p>
+<ul>
+<li>The algorithm name.</li>
+<li>A setup function that configures a <code>TetradSearch</code> object
+to execute the algorithm.</li>
+</ul>
+<p>The setup function receives the TetradSearch object as its first
+argument, along with any additional parameters passed via
+<code>...</code> when the method is constructed. Its responsibilities
+are to:</p>
+<ol style="list-style-type: decimal">
+<li>Configure the TetradSearch object with the appropriate parameters
+and score.</li>
+<li>Instantiate the correct Tetrad algorithm class.</li>
+</ol>
+<p>The fully qualified class name can be identified by inspecting the
+Tetrad source code at:</p>
+<p><a href="https://github.com/cmu-phil/tetrad" class="uri">https://github.com/cmu-phil/tetrad</a></p>
+<p>Be sure to browse the version corresponding to the installed Tetrad
+release. The relevant Java classes are located under:</p>
+<p><a href="https://github.com/cmu-phil/tetrad/tree/development/tetrad-lib/src/main/java" class="uri">https://github.com/cmu-phil/tetrad/tree/development/tetrad-lib/src/main/java</a></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">register_tetrad_algorithm</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="st">&quot;my_boss_variant&quot;</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="cf">function</span>(</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>    self,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="at">num_starts =</span> <span class="dv">1</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>    <span class="at">use_bes =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>    <span class="at">use_data_order =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>    <span class="at">output_cpdag =</span> <span class="cn">TRUE</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  ) {</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>    self<span class="sc">$</span><span class="fu">set_params</span>(</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>      <span class="at">USE_BES =</span> use_bes,</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>      <span class="at">NUM_STARTS =</span> num_starts,</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>      <span class="at">USE_DATA_ORDER =</span> use_data_order,</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>      <span class="at">OUTPUT_CPDAG =</span> output_cpdag</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>    )</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>    self<span class="sc">$</span>alg <span class="ot">&lt;-</span> rJava<span class="sc">::</span><span class="fu">.jnew</span>(</span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>      <span class="st">&quot;edu/cmu/tetrad/algcomparison/algorithm/oracle/cpdag/Boss&quot;</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>      self<span class="sc">$</span>score</span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>    )</span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>    self<span class="sc">$</span>alg<span class="sc">$</span><span class="fu">setKnowledge</span>(self<span class="sc">$</span>knowledge)</span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>  }</span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a>)</span></code></pre></div>
+<p>You can view all the custom registered Tetrad algorithms using
+<code>tetrad_alg_registry()</code>, and reset it using
+<code>reset_tetrad_alg_registry()</code>.</p>
+<p>Like for bnlearn and pcalg, we then create a method function
+<code>my_boss_variant()</code> that constructs a builder function which
+in turn constructs a runner using the registered Tetrad algorithm.</p>
+<p>BOSS is a <strong>score-based</strong> algorithm, so the method
+accepts a <code>score</code> argument and passes it to the runner, which
+configures the <code>TetradSearch</code> object accordingly. It returns
+a PDAG, so we set the <code>graph_class</code> attribute to
+<code>&quot;PDAG&quot;</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>my_boss_variant <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="at">engine =</span> <span class="st">&quot;tetrad&quot;</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  score,</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  ...</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>) {</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  engine <span class="ot">&lt;-</span> <span class="fu">match.arg</span>(engine)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  args <span class="ot">&lt;-</span> rlang<span class="sc">::</span><span class="fu">list2</span>(...)</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  builder <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">knowledge =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>    runner <span class="ot">&lt;-</span> <span class="cf">switch</span>(</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>      engine,</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>      <span class="at">tetrad =</span> rlang<span class="sc">::</span><span class="fu">exec</span>(my_boss_variant_tetrad_runner, score, <span class="sc">!!!</span>args)</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>    )</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>    runner</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>  }</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>  method <span class="ot">&lt;-</span> <span class="fu">new_disco_method</span>(</span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>    <span class="at">builder =</span> builder,</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;my_boss_variant&quot;</span>,</span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>    <span class="at">engine =</span> engine,</span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>    <span class="at">graph_class =</span> <span class="st">&quot;PDAG&quot;</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>  )</span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>  method</span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>}</span></code></pre></div>
+<p>Next we define the runner function
+<code>my_boss_variant_tetrad_runner()</code></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>my_boss_variant_tetrad_runner <span class="ot">&lt;-</span> <span class="cf">function</span>(score, ...) {</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  search <span class="ot">&lt;-</span> TetradSearch<span class="sc">$</span><span class="fu">new</span>()</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  args <span class="ot">&lt;-</span> <span class="fu">list</span>(...)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  args_to_pass <span class="ot">&lt;-</span> <span class="fu">distribute_engine_args</span>(</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>    <span class="at">search =</span> search,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>    <span class="at">args =</span> args,</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    <span class="at">engine =</span> <span class="st">&quot;tetrad&quot;</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    <span class="at">alg =</span> <span class="st">&quot;my_boss_variant&quot;</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  )</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(args_to_pass<span class="sc">$</span>score_args) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>    rlang<span class="sc">::</span><span class="fu">exec</span>(search<span class="sc">$</span>set_score, score, <span class="sc">!!!</span>args_to_pass<span class="sc">$</span>score_args)</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>    search<span class="sc">$</span><span class="fu">set_score</span>(score)</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>  }</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(args_to_pass<span class="sc">$</span>alg_args) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>    rlang<span class="sc">::</span><span class="fu">exec</span>(search<span class="sc">$</span>set_alg, <span class="st">&quot;my_boss_variant&quot;</span>, <span class="sc">!!!</span>args_to_pass<span class="sc">$</span>alg_args)</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>    search<span class="sc">$</span><span class="fu">set_alg</span>(<span class="st">&quot;my_boss_variant&quot;</span>)</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>  }</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>  runner <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a>    <span class="at">set_knowledge =</span> <span class="cf">function</span>(knowledge) {</span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a>      search<span class="sc">$</span><span class="fu">set_knowledge</span>(knowledge)</span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a>    },</span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a>    <span class="at">run =</span> <span class="cf">function</span>(data) {</span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a>      search<span class="sc">$</span><span class="fu">run_search</span>(data)</span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>    }</span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a>  )</span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a>  runner</span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a>}</span></code></pre></div>
+<p>Once defined we can now run <code>my_boss_variant()</code> like any
+other method in causalDisco.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Ensure Tetrad is installed and Java is working before running the algorithm</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">verify_tetrad</span>()<span class="sc">$</span>installed <span class="sc">&amp;&amp;</span> <span class="fu">verify_tetrad</span>()<span class="sc">$</span>java_ok) {</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  my_boss_variant_tetrad <span class="ot">&lt;-</span> <span class="fu">my_boss_variant</span>(<span class="at">engine =</span> <span class="st">&quot;tetrad&quot;</span>, <span class="at">score =</span> <span class="st">&quot;sem_bic&quot;</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  my_boss_variant_tetrad_result <span class="ot">&lt;-</span> <span class="fu">disco</span>(tpc_example, my_boss_variant_tetrad)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="fu">plot</span>(my_boss_variant_tetrad_result)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>}</span></code></pre></div>
+<p><img role="img" aria-label src="data:image/png;base64,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" alt width="276" /></p>
+<p>Once again, if using a hybrid or constraint-based algorithm rather
+than a score-based one, the structure would remain the same but the
+method would accept different arguments (e.g., <code>test</code> and
+<code>alpha</code> for a constraint-based algorithm).</p>
+<p>Finally, we clean up the custom registered Tetrad algorithm</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">reset_tetrad_alg_registry</span>()</span></code></pre></div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>In this vignette, we have illustrated how to add new algorithms to
+causalDisco, both from the R packages pcalg and bnlearn and from
+Tetrad.</p>
+<p>If you have any feedback or suggestions for improvement on the API
+and functionality for extending causalDisco, please let us know by
+opening an issue on GitHub.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Causal Discovery</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Causal Discovery</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(causalDisco)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&gt; causalDisco startup:</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt;   Java heap size requested: 2 GB</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt;   Tetrad version: 7.6.10</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt;   Java successfully initialized with 2 GB.</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt;   To change heap size, set options(java.heap.size = &#39;Ng&#39;) or Sys.setenv(JAVA_HEAP_SIZE = &#39;Ng&#39;) *before* loading.</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#&gt;   Restart R to apply changes.</span></span></code></pre></div>
+<p>This vignette provides a very brief introduction to causal discovery
+using simulated data. For a thorough introduction to causal discovery
+concepts, we recommend Glymour et al. (2019) <a href="https://www.frontiersin.org/journals/genetics/articles/10.3389/fgene.2019.00524/full">Review
+of Causal Discovery Methods Based on Graphical Models</a> or Zanga et
+al. (2022) <a href="https://arxiv.org/abs/2305.10032">A Survey on Causal
+Discovery: Theory and Practice</a>.</p>
+<p>The goal of causal discovery is to infer the causal relationships
+among a set of observed variables using observational data.</p>
+<div id="example-of-causal-discovery" class="section level1">
+<h1>Example of causal discovery</h1>
+<p>Suppose we have this DAG:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>cg <span class="ot">&lt;-</span> caugi<span class="sc">::</span><span class="fu">caugi</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>    Z <span class="sc">%--&gt;%</span> X1,</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>    X3 <span class="sc">%--&gt;%</span> X2,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>    X1 <span class="sc">%--&gt;%</span> Y,</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>    X2 <span class="sc">%--&gt;%</span> Y</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>)</span></code></pre></div>
+<p>We define a layout which we will use for plotting the graphs in this
+vignette:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>layout <span class="ot">&lt;-</span> caugi<span class="sc">::</span><span class="fu">caugi_layout_sugiyama</span>(cg)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">plot</span>(cg, <span class="at">layout =</span> layout, <span class="at">main =</span> <span class="st">&quot;True DAG&quot;</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>We can create data from a linear Gaussian model corresponding to the
+above DAG using <code>generate_dag_data()</code>. We generate 10,000
+samples with a fixed random seed from the DAG above, where we let the
+edge coefficients be sampled with absolute values between 0.1 and 0.9
+and assigned random signs, and where the standard deviation of the
+additive Gaussian noise at each node is sampled from a log-uniform
+distribution between 0.3 and 2.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>data_linear <span class="ot">&lt;-</span> <span class="fu">generate_dag_data</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  cg,</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">10000</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">1405</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">coef_range =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.9</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="at">error_sd =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="dv">2</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="fu">head</span>(data_linear)</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 5</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt;        Z      X3     X1      X2       Y</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt;    &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; 1  0.632  0.297   0.773 -0.256  -0.730 </span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; 2 -1.67  -1.10   -1.20   1.10   -0.722 </span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; 3 -0.214  0.713   1.09   0.0264  0.261 </span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; 4 -1.61  -0.171  -1.21  -0.0346  0.0746</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; 5  1.57   0.0517  0.402 -0.874   1.40  </span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; 6 -1.08   0.178  -1.09   0.189   0.0591</span></span></code></pre></div>
+<p>The R code used to generate the data is stored as an attribute of the
+data frame:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">attr</span>(data_linear, <span class="st">&quot;generating_model&quot;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; $dgp</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; $dgp$X3</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; rnorm(n, sd = 0.95)</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; $dgp$X2</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; X3 * 0.159 + rnorm(n, sd = 0.507)</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; $dgp$Z</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; rnorm(n, sd = 1.794)</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; $dgp$X1</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; Z * 0.3 + rnorm(n, sd = 1.634)</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; $dgp$Y</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; X1 * 0.61 + X2 * 0.31 + rnorm(n, sd = 1.216)</span></span></code></pre></div>
+<p>The goal is now to recover the causal structure from the data
+alone.</p>
+<p>We will use the PC algorithm to learn the causal structure. One of
+its key assumptions is causal sufficiency, meaning that there are no
+unobserved confounders. We can use the PC algorithm from any of the
+“tetrad”, “pcalg”, or “bnlearn” engines to learn the structure from the
+data. The motivation for having multiple engines is that they may
+implement different algorithms, tests, or scoring methods, or the same
+algorithm may be implemented differently across engines.</p>
+<p>Below, we set up the PC algorithm using Fisher’s Z test, a
+significance level of 0.05, and <code>pcalg</code> as the engine. To do
+so, we first define the PC method using the <code>pc()</code> function,
+and then pass it to the <code>disco()</code> function along with the
+data.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>pc_pcalg <span class="ot">&lt;-</span> <span class="fu">pc</span>(<span class="at">engine =</span> <span class="st">&quot;pcalg&quot;</span>, <span class="at">test =</span> <span class="st">&quot;fisher_z&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.05</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>pc_result_pcalg <span class="ot">&lt;-</span> <span class="fu">disco</span>(<span class="at">data =</span> data_linear, <span class="at">method =</span> pc_pcalg)</span></code></pre></div>
+<p>We can visualize the results using the <code>plot()</code> function,
+where we explicitly provide the layout defined above so graphs are
+easier to compare.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">plot</span>(pc_result_pcalg, <span class="at">layout =</span> layout, <span class="at">main =</span> <span class="st">&quot;PC (pcalg)&quot;</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAA1VBMVEUAAAAAADAAADoAAFUAAGYAMHcAOjoAOmYAOpAAVZYAZpAAZrYwAAAwAFUwd7U6AAA6OgA6OmY6OpA6ZpA6ZrY6kLY6kNtVAABVd3dVltNmAABmOgBmOjpmkNtmtttmtv93MAB3tdOQOgCQOjqQZjqQkLaQttuQ2/+WVQCW05aW09O1dzC105a109O2ZgC2Zjq2kGa227a229u22/+2/9u2///TllXTtXfT05bT07XT09PbkDrbtmbbtpDb27bb2//b////tmb/25D/27b//7b//9v////yB1bYAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAJG0lEQVR4nO2dC3vTNhSGTYFBR9fCyujI2FrYRrNlyza6pW3KWFva/P+fNMmSFSm+HMexdTn53ueBEtuKznkryY4TcrIFaCQLHUDsQBABBBFAEAEEEUAQAQQRQBDB8IKuMsWLs/zh/cfnywc5d6OdU/pp7t9lT6/tDbcHj/7pNdBq/AnKcg133+lHr6wD3MyrKQkSG17VHdwjHgXJBEVWBcd6f8tES4Jait0UH4LyqfB5JIeQsPXkvXjwLjPZ3eRDa5o9+uuN2KmmnpyGX/wg//WvHHEvTo2g+z/EQadT+Zy3B0bygHgTJH7unIos1YP7H1/+5+yf2vNwambhjdmqBKkRuPNctrkb+Zhj3gR9GomfIqdnK7tFynKTcPLobPExkw+ElW+uP8vjxc4vr+VQeaUFiV3Pru/lwblUD3PM7xqUp+qinU3VopTPnfyvxdXhh/yAT38+l9qUILXrbqQFeTiP+T2LVQjSm3Syeh6akXH/k2qrBRW7tMKszfXBhngTtHN4ZoaLjStITKFjPekkcsl58vOnUSGoaM9M0HIiWIv0ob5UbBxBaufdiPkIslaK8mneCFpdg25evM8H1MJepJ01iKOg8oXicpG2z2Iv5WDJjoWap9fS5rPqsxiTRdpOw7zUeKk3LE/zOfmxU2tldhZp5zqIz2ne+T3rF6sfrP0yTTEa/hZnrEPrSvr7hTqLPXl/pS6Jiivpr8/ysePnxVj42x3mpcYa0yUfO7cHHpagCASJgXDcWtA0n5tiacqXKh4vVkmuZLYtBd1YL9mmTG53kNyNzKmd5vObA33RyeaGWeJAEAEEEUAQAQQRQBABBBFAEAEEEUAQAQQRQBABBBFAEAEEEUAQAQQRQBABBBFAEEFcgubyHYt56CgcYhIk5QjEj9CRWMQTi7KjiEhRNJFYenJFoeMpiCWQFT/xGIokjpKfaAzFEgYENZL7uTh6+Kv4cb63G5OhSKLIjcyyffH3ONcEQTbFBJNuLo72o5pkcQShjZzv7c8nxQCCoCVmiR4//GU5gCDIYASd72WPf4egEsuT/CR7HdmJPo4gjJPZg7cQVEFWJSiS0EIHkANBFFlZUCyRhQ5AAUEUuN3RhLzJWrphFsmd18BBmP89Vr7lau0KGmHIvjNXwspN+9XdgYIM2PeiZMB52ycKP4GnWKOCKPxEsgY17QsdYdjuF00OYvATWlC2oASFjzB0782CFjGEGKzvzP7R5QAPBOw7K/1j/SOGJ1zXa/WcSJgBO04lznD9JhNosG7TibSHTjv1GuZkFqLTzn0mFWyQLtOKNkSPiYUboMPU4l27u437823Ib3999Ob5ZOa1t546SzFmv30lGbTXrtKM2mdPiYbd1E/PHXlbqj31M0A36Ubuq5eEQ/fUScqx++kj6eC9dJF29LqDQXsY/mQ2dAdIIOjTe+hi2KdncJ4ZdoUY8sk9dTPkk3t7wZRmEj5vbA3YV9IXcT66G+qJ2dxcT/llkpcuh3laRm8SJ3wjwk+3Q9zJCvdZniTuywX9zGUC6XD71G7fTxj6c9+xJxTcT+QZReAn5pSC/78KTa9xpPl+MEWUWUXkJ8q0ovITYV6R+Ykusej8xJVZLKcvl36i6uVTgz08xyBEkly0fiLJLmI/UaQXtZ/w+cW5PNtsGuBm7aPXs9j4d7hR6xT8LALmmIifYEkm4ydQlgn5CZFm/Kcvl87xdmyXmB6J10wT9OM11ST9eMw1UT/ekk3Wj59sUzt9uawf/boNktYjGTjh5P0MnDEDP32lXPnldCz8VKTR9HWEVdsz/aWq85V2TPy4idQlW3Vs0cL93uLMbB8i1jBYSVUnax1a2rD6zdf6q68Z6ZHopGqSLR24fFhRx0p9u7OXsD2SNSS7cpz9qKJFzdBLnko95UHkPKprEs83zPdIy2QhaA1B9U0YGmqbbNauCTtDrZOFoNaCmpswM9Q+2VVB53uqApou9HX+VVwF9fqinOzliXipUVFesTSCVKlKWW1wbip7chVkJXt58uCtELVLC8pLVV6e7Kr2GW9By2TP9+SMmZRLmGarTcSo2dUHCr+zpSBOrzYqklUjqihOZXkptREyv90rKg1agjgNoepkrSK48yZBYiqaxYq9IDtZvSSRgsR6brRwn2JusmaNbp5i48e/HRVHshdkJWuNnypByyp64qLAHDtjfhazkrXnWtNpXlUzH+vlnLkgK1mnBG6DoMuTXMnFkbrG5C3ISlZfGZOCxJr1Wo+9XVcQpyWoItmJKkWlJ86iShBezVcm21YQrwG0RrIt7yhy89M+WdyTJpJtJ4jfAGqdbKv3xTj6aZtsi3dWWb0rb9MqWfq9eZ7DR9EiWerTHWyHj4JOtu7zQQtxeEMBSz5Qya71CTOurPsJM2oPQ7pogKDOexgCQQQQRABBBBBEAEEEEEQAQQQQRABBBBBEAEEEEEQAQQQQRABBBBBEAEEEEEQAQQQQRABBBBBEAEEEEEQAQQQQRABBBBBEAEEEEEQAQQQQRABBBBBEAEEEEEQAQQQQRABBBBBEAEEEEEQAQQQQRABBBBBEAEEEEEQAQQQQRABBBBBEAEEEEEQAQQQQRABBBBBEAEEEEEQAQQQQRABBBBDUCL6iq4H1i0DSexjRoQhkiz18WL8IZKs9XOhQBNKQz8j58DGGpEMRSLNRueX9VZNdvk9ab7KaMlbUWVDWcDQjOhSBrGnI01CXqgh1DVkagqBmuhSBrG/I0NCGgi6OVCGXfeaCnJKgE1O4pkGQI3ZijudnqFwSVFY6nFVkXC/IqpfETpDJ01TJvDjanxfFQefVBdichvJgNfx4C3KrZC4FVdQ4dBvaE4yzILdK5qRiEaoT5BQkYyzIqtw3s0oZk1PMnmCsBdlVMq2s6wSZlvYE4+fHXqWtkqBWpV7qQvHCasRakFMStKj43CRItxxbBXo5+ilXyVRqZg3FsO2Ws5qSmnwolwQdiz+XJ/urS1D17Y6xeqWhCmVy9KPSdEuCyqRfl8fEtt4w61QEsti0FbdcOxWBNBtx0355WHXrLXjbp1MRyK2iUxHIraJbEcitolMRyK2iWxHIraJrEcitotsnzEAOBBFAEAEEEUAQAQQRQBABBBH8D2lZRQcz3/NpAAAAAElFTkSuQmCC" /><!-- --></p>
+<p>The PC algorithm recovers the correct causal structure up to Markov
+equivalence, represented as a CPDAG. A CPDAG represents the equivalence
+class of DAGs that encode the same conditional independencies.</p>
+<p>The first notable feature of this plot is that some edges are
+directed, while others are undirected. For example, the edge from
+<code>X1</code> to <code>Y</code> is directed, indicating a causal
+effect of <code>X1</code> on <code>Y</code>, but not in the reverse
+direction. In contrast, the edge between <code>X2</code> and
+<code>X3</code> is undirected, indicating that the data alone do not
+provide sufficient information to determine the causal direction. Both
+orientations <code>X2 %--&gt;% X3</code> and <code>X3 %--&gt;% X2</code>
+are compatible with the observed conditional independencies.</p>
+<p>We demonstrate the non-identifiability of the causal direction
+between <code>X2</code> and <code>X3</code> by reversing the direction
+of this edge in the data-generating process above and applying the PC
+algorithm to the resulting data set.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>cg_reverse <span class="ot">&lt;-</span> caugi<span class="sc">::</span><span class="fu">caugi</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  Z <span class="sc">%--&gt;%</span> X1,</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  X2 <span class="sc">%--&gt;%</span> X3,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  X1 <span class="sc">%--&gt;%</span> Y,</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  X2 <span class="sc">%--&gt;%</span> Y</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>)</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>data_linear_reverse <span class="ot">&lt;-</span> <span class="fu">generate_dag_data</span>(</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  cg_reverse,</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">10000</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">1405</span>,</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>  <span class="at">coef_range =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.9</span>),</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>  <span class="at">error_sd =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="dv">2</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>)</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>pc_result_reverse <span class="ot">&lt;-</span> <span class="fu">disco</span>(<span class="at">data =</span> data_linear_reverse, <span class="at">method =</span> pc_pcalg)</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="fu">plot</span>(pc_result_reverse, <span class="at">layout =</span> layout, <span class="at">main =</span> <span class="st">&quot;PC (pcalg) reversed&quot;</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>We learn the same causal structure as before, demonstrating that the
+direction of influence between <code>X2</code> and <code>X3</code>
+cannot be determined from the data alone.</p>
+</div>
+<div id="unobserved-confounding" class="section level1">
+<h1>Unobserved confounding</h1>
+<p>In practice, unobserved confounding may be present, violating one of
+the assumptions of the PC algorithm. Suppose we have the following DAG
+with an unobserved confounder <code>U</code> between <code>X1</code> and
+<code>X2</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>cg_unobserved <span class="ot">&lt;-</span> caugi<span class="sc">::</span><span class="fu">caugi</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  Z <span class="sc">%--&gt;%</span> X1,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  X3 <span class="sc">%--&gt;%</span> X2,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  X1 <span class="sc">%--&gt;%</span> Y,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  X2 <span class="sc">%--&gt;%</span> Y,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  U <span class="sc">%--&gt;%</span> X1 <span class="sc">+</span> X2</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>)</span></code></pre></div>
+<p>We can visualize this DAG, marking the unobserved variable
+<code>U</code> in red and using dashed edges to indicate that it is
+unobserved:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">plot</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  cg_unobserved,</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="at">edge_style =</span> <span class="fu">list</span>(</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>    <span class="at">by_edge =</span> <span class="fu">list</span>(</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>      <span class="at">U =</span> <span class="fu">list</span>(<span class="at">col =</span> <span class="st">&quot;red&quot;</span>, <span class="at">fill =</span> <span class="st">&quot;red&quot;</span>, <span class="at">lty =</span> <span class="st">&quot;dashed&quot;</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>    )</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  ),</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>  <span class="at">node_style =</span> <span class="fu">list</span>(</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>    <span class="at">by_node =</span> <span class="fu">list</span>(</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>      <span class="at">U =</span> <span class="fu">list</span>(<span class="at">col =</span> <span class="st">&quot;red&quot;</span>, <span class="at">fill =</span> <span class="st">&quot;red&quot;</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>    )</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>  ),</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>  <span class="at">main =</span> <span class="st">&quot;True DAG&quot;</span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>We can generate data from this DAG using
+<code>generate_dag_data()</code>, and then afterwards remove the
+unobserved variable <code>U</code> from the data frame:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>data_unobserved <span class="ot">&lt;-</span> <span class="fu">generate_dag_data</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  cg_unobserved,</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">10000</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">1405</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="at">coef_range =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.9</span>),</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  <span class="at">error_sd =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="dv">2</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>)</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>data_unobserved <span class="ot">&lt;-</span> data_unobserved[, <span class="fu">names</span>(data_unobserved) <span class="sc">!=</span> <span class="st">&quot;U&quot;</span>]</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="fu">head</span>(data_unobserved)</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 5</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co">#&gt;         Z      X3     X1     X2       Y</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="co">#&gt;     &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;</span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co">#&gt; 1  0.608   1.42   -1.31  -1.69   1.99  </span></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="co">#&gt; 2 -0.716  -0.357  -0.490 -0.561  0.955 </span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="co">#&gt; 3  1.22    1.49   -0.124 -1.48   1.52  </span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="co">#&gt; 4 -0.752  -0.188   0.877  1.35  -1.39  </span></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a><span class="co">#&gt; 5 -0.0863  0.0156  1.54  -0.926 -0.0833</span></span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="co">#&gt; 6 -0.799  -0.929   0.802  0.253 -0.939</span></span></code></pre></div>
+<p>We can then apply the PC algorithm as before:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>pc_pcalg_unobserved <span class="ot">&lt;-</span> <span class="fu">pc</span>(<span class="at">engine =</span> <span class="st">&quot;pcalg&quot;</span>, <span class="at">test =</span> <span class="st">&quot;fisher_z&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.05</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>pc_result_unobserved <span class="ot">&lt;-</span> <span class="fu">disco</span>(<span class="at">data =</span> data_unobserved, <span class="at">method =</span> pc_pcalg_unobserved)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="fu">plot</span>(pc_result_unobserved, <span class="at">layout =</span> layout, <span class="at">main =</span> <span class="st">&quot;PC (pcalg)&quot;</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>We see that the PC algorithm does not recover the correct causal
+structure due to the presence of the unobserved confounder. In
+particular, it found an incorrect edge between <code>X1</code> and
+<code>X2</code>.</p>
+</div>
+<div id="next-steps" class="section level1">
+<h1>Next steps</h1>
+<p>For more information about how to incorporate knowledge into causal
+discovery methods, see the <a href="knowledge.html">knowledge
+vignette</a>.</p>
+<p>For more information about how to visualize causal discovery results,
+see the <a href="visualization.html">visualization vignette</a>.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

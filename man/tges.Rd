@@ -2,67 +2,99 @@
 % Please edit documentation in R/tges.R
 \name{tges}
 \alias{tges}
-\title{Estimate the restricted Markov equivalence class using Temporal Greedy Equivalence Search}
+\title{TGES Algorithm for Causal Discovery}
 \usage{
-tges(score, verbose = FALSE)
+tges(engine = c("causalDisco"), score, ...)
 }
 \arguments{
-\item{score}{tiered scoring object to be used. At the moment only scores supported re \code{\linkS4class{TemporalBIC}} and \code{\linkS4class{TemporalBDeu}}.}
+\item{engine}{Character; which engine to use. Must be one of:
+\describe{
+\item{\code{"causalDisco"}}{causalDisco library.}
+}}
 
-\item{verbose}{indicates whether debug output should be printed.}
-}
-\value{
-\code{tges} returns a \code{tamat} object which is a matrix with a
-"order" attribute (a character vector listing the temporal order of the variables in the adjacency matrix).
+\item{score}{Character; name of the scoring function to use.}
+
+\item{...}{Additional arguments passed to the chosen engine
+(e.g. test or algorithm parameters).}
 }
 \description{
-Perform causal discovery using the temporal greedy equivalence search algorithm.
+Run the Temporal GES algorithm for causal discovery using the causalDisco
+engine.
 }
+\details{
+For specific details on the supported scores, see \link{CausalDiscoSearch}. For additional parameters passed
+via \code{...}, see \code{\link[=tges_run]{tges_run()}}.
+}
+\section{Recommendation}{
+
+While it is possible to call the function returned directly with a data frame,
+we recommend using \code{\link[=disco]{disco()}}. This provides a consistent interface and handles knowledge
+integration.
+}
+
+\section{Value}{
+
+A function that takes a single argument \code{data} (a data frame). When called,
+this function returns a list containing:
+\itemize{
+\item \code{knowledge} A \code{Knowledge} object with the background knowledge
+used in the causal discovery algorithm. See \code{\link[=knowledge]{knowledge()}} for how to construct it.
+\item \code{caugi} A \code{\link[caugi:caugi]{caugi::caugi}} object (of class \code{PDAG}) representing the learned causal graph
+from the causal discovery algorithm.
+}
+}
+
 \examples{
-#Simulate Gaussian data
-set.seed(123)
-n <- 500
-child_x <- rnorm(n)
-child_y <- 0.5*child_x + rnorm(n)
-child_z <- 2*child_x + child_y  + rnorm(n)
+# Recommended route using disco:
+kn <- knowledge(
+  tpc_example,
+  tier(
+    child ~ starts_with("child"),
+    youth ~ starts_with("youth"),
+    old ~ starts_with("old")
+  )
+)
 
-adult_x <- child_x + rnorm(n)
-adult_z <- child_z + rnorm(n)
-adult_w <- 2*adult_z + rnorm(n)
-adult_y <- 2*child_x + adult_w + rnorm(n)
+my_tges <- tges(engine = "causalDisco", score = "tbic")
 
-simdata <- data.frame(child_x, child_y, child_z,
-                     adult_x, adult_z, adult_w,
-                      adult_y)
+disco(tpc_example, my_tges, knowledge = kn)
 
-# Define order in prefix way
-prefix_order <- c("child", "adult")
+# another way to run it
 
-# Define TBIC score
-t_score <- new("TemporalBIC", order = prefix_order
-               , data = simdata)
-# Run tges
-tges_pre <- tges(t_score)
+my_tges <- my_tges |>
+  set_knowledge(kn)
+my_tges(tpc_example)
 
-# Plot MPDAG
-plot(tges_pre)
 
-# Define order in integer way
-integer_order <- c(1,1,1,2,2,2,2)
+# or you can run directly with tges_run()
 
-# Define TBIC score
-t_score <- new("TemporalBIC", order = integer_order
-               , data = simdata)
-# Run tges
-tges_int <- tges(t_score)
+data(tpc_example)
 
-# Plot MPDAG
-plot(tges_int)
+score_bic <- new(
+  "TemporalBIC",
+  data = tpc_example,
+  nodes = colnames(tpc_example),
+  knowledge = kn
+)
 
+res_bic <- tges_run(score_bic)
+res_bic
 }
 \seealso{
-\code{\linkS4class{TemporalBIC}}
+Other causal discovery algorithms: 
+\code{\link{boss}()},
+\code{\link{boss_fci}()},
+\code{\link{fci}()},
+\code{\link{ges}()},
+\code{\link{gfci}()},
+\code{\link{grasp}()},
+\code{\link{grasp_fci}()},
+\code{\link{gs}()},
+\code{\link{iamb-family}},
+\code{\link{pc}()},
+\code{\link{sp_fci}()},
+\code{\link{tfci}()},
+\code{\link{tpc}()}
 }
-\author{
-Tobias Ellegaard Larsen
-}
+\concept{causal discovery algorithms}
+\concept{cd_algorithms}
