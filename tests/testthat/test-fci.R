@@ -1,8 +1,6 @@
 test_that("fci Tetrad disco respects tier knowledge", {
   skip_if_no_tetrad()
 
-  skip("fci Tetrad does not yet support tier knowledge correctly.")
-
   data(tpc_example)
 
   kn <- knowledge(
@@ -23,7 +21,7 @@ test_that("fci Tetrad disco respects tier knowledge", {
 
   edges <- output$caugi@edges
 
-  violations <- causalDisco:::check_tier_violations(edges, kn)
+  violations <- check_tier_violations(edges, kn)
   expect_true(
     nrow(violations) == 0,
     info = "Tier violations were found in the output graph."
@@ -46,7 +44,7 @@ test_that("fci Tetrad disco respects tier knowledge", {
   output <- disco(tpc_example, tetrad_fci, knowledge = kn)
   edges <- output$caugi@edges
 
-  violations <- causalDisco:::check_tier_violations(edges, kn)
+  violations <- check_tier_violations(edges, kn)
   expect_true(
     nrow(violations) == 0,
     info = "Tier violations were found in the output graph."
@@ -75,7 +73,7 @@ test_that("fci Tetrad disco respects required background knowledge", {
   output <- disco(data = tpc_example, method = tetrad_fci, knowledge = kn)
   edges <- output$caugi@edges
 
-  violations <- causalDisco:::check_edge_constraints(edges, kn)
+  violations <- check_edge_constraints(edges, kn)
   expect_true(
     nrow(violations) == 0,
     info = "Required edge not found in the output graph."
@@ -104,13 +102,13 @@ test_that("fci Tetrad disco respects required background knowledge", {
   output <- disco(data = tpc_example, method = tetrad_fci, knowledge = kn)
   edges <- output$caugi@edges
 
-  violations_tiers <- causalDisco:::check_tier_violations(edges, kn)
+  violations_tiers <- check_tier_violations(edges, kn)
   expect_true(
     nrow(violations_tiers) == 0,
     info = "Tier violations were found in the output graph."
   )
 
-  violations_req <- causalDisco:::check_edge_constraints(edges, kn)
+  violations_req <- check_edge_constraints(edges, kn)
   expect_true(
     nrow(violations_req) == 0,
     info = "Required edge not found in the output graph."
@@ -135,7 +133,7 @@ test_that("fci Tetrad disco respects forbidden background knowledge", {
   output <- disco(data = tpc_example, method = tetrad_fci, knowledge = kn)
   edges <- output$caugi@edges
 
-  violations <- causalDisco:::check_edge_constraints(edges, kn)
+  violations <- check_edge_constraints(edges, kn)
   expect_true(
     nrow(violations) == 0,
     info = "Required edge not found in the output graph."
@@ -154,7 +152,7 @@ test_that("fci Tetrad disco respects forbidden background knowledge", {
   )
   output <- disco(data = tpc_example, method = tetrad_fci, knowledge = kn)
   edges <- output$caugi@edges
-  violations <- causalDisco:::check_edge_constraints(edges, kn)
+  violations <- check_edge_constraints(edges, kn)
   expect_true(
     nrow(violations) == 0,
     info = "Required edge not found in the output graph."
@@ -246,7 +244,7 @@ test_that("fci pcalg disco respects forbidden background knowledge", {
   output <- disco(data = tpc_example, method = pcalg_fci, knowledge = kn)
   edges <- output$caugi@edges
 
-  violations <- causalDisco:::check_edge_constraints(edges, kn)
+  violations <- check_edge_constraints(edges, kn)
   expect_true(
     nrow(violations) == 0,
     info = "Required edge not found in the output graph."

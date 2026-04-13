@@ -155,15 +155,20 @@ check_args_and_distribute_args_pcalg <- function(
 
   # Note that the pcalg package does not have args that are sent
   # directly to the test itself, but it is rather sent to the algorithm.
-  switch(
+  engine_args_alg <- switch(
     alg,
-    pc = engine_args_alg <- names(formals(pcalg::pc)),
-    fci = engine_args_alg <- names(formals(pcalg::fci)),
-    ges = engine_args_alg <- names(formals(pcalg::ges)),
+    pc = names(formals(pcalg::pc)),
+    fci = names(formals(pcalg::fci)),
+    ges = names(formals(pcalg::ges)),
     stop("Unsupported algorithm: ", alg, call. = FALSE)
   )
 
-  args_to_pass_to_engine_alg <- args[names(args) %in% engine_args_alg]
+  wrapper_args <- c("suff_stat_fun", "args")
+  wrapper_args_out <- args[names(args) %in% wrapper_args]
+
+  args_to_pass_to_engine_alg <- args[
+    names(args) %in% engine_args_alg & !(names(args) %in% wrapper_args)
+  ]
   engine_args_score <- list()
   if (!is.null(score)) {
     engine_args_score <- methods::getRefClass("GaussL0penIntScore")$methods(
@@ -177,7 +182,11 @@ check_args_and_distribute_args_pcalg <- function(
   # Check if any arguments are not in pcalg::
   args_not_in_engine_args <- setdiff(
     names(args),
-    c(engine_args_alg, engine_args_score)
+    c(
+      names(args_to_pass_to_engine_alg),
+      engine_args_score,
+      wrapper_args
+    )
   )
   # If '...' in given algorithm/test is an argument, it will throw a warning
   # rather than an error.
@@ -198,7 +207,8 @@ check_args_and_distribute_args_pcalg <- function(
   }
   list(
     alg_args = args_to_pass_to_engine_alg,
-    score_args = args_to_pass_to_engine_score
+    score_args = args_to_pass_to_engine_score,
+    wrapper_args = wrapper_args_out
   )
 }
 
@@ -240,11 +250,16 @@ check_args_and_distribute_args_causalDisco <- function(
     stop("Unsupported algorithm: ", alg, call. = FALSE)
   )
 
+  wrapper_args <- c("suff_stat_fun", "args")
+  wrapper_args_out <- args[names(args) %in% wrapper_args]
+
   # Get arguments of the top-level function
   engine_args_alg <- names(formals(engine_fun))
 
   # Initialize list of args to pass
-  args_to_pass_to_engine_alg <- args[names(args) %in% engine_args_alg]
+  args_to_pass_to_engine_alg <- args[
+    names(args) %in% engine_args_alg & !(names(args) %in% wrapper_args)
+  ]
 
   # If ... is in top-level args, we need to also check _run function args
   if ("..." %in% engine_args_alg) {
@@ -260,11 +275,14 @@ check_args_and_distribute_args_causalDisco <- function(
   engine_args_score <- list()
   if (!is.null(score)) {
     score <- tolower(score)
-    switch(
+
+    score <- switch(
       score,
-      "tbic" = score <- "TemporalBIC",
-      "tbdeu" = score <- "TemporalBDeu"
+      tbic = "TemporalBIC",
+      tbdeu = "TemporalBDeu",
+      stop("Unsupported score: ", score, call. = FALSE)
     )
+
     engine_args_score <- methods::getRefClass(score)$methods("initialize") |>
       methods::formalArgs()
     args_to_pass_to_engine_score <- args[names(args) %in% engine_args_score]
@@ -275,7 +293,11 @@ check_args_and_distribute_args_causalDisco <- function(
   # Check for unused arguments
   args_not_in_engine_args <- setdiff(
     names(args),
-    c(names(args_to_pass_to_engine_alg), engine_args_score)
+    c(
+      names(args_to_pass_to_engine_alg),
+      engine_args_score,
+      wrapper_args
+    )
   )
 
   # If '...' in given algorithm/test is an argument, it will throw a warning
@@ -308,7 +330,8 @@ check_args_and_distribute_args_causalDisco <- function(
   }
   list(
     alg_args = args_to_pass_to_engine_alg,
-    score_args = args_to_pass_to_engine_score
+    score_args = args_to_pass_to_engine_score,
+    wrapper_args = wrapper_args_out
   )
 }
 
@@ -370,7 +393,13 @@ check_args_and_distribute_args_bnlearn <- function(
       "fun",
       "args"
     )
-    allowed_dot_args <- c(allowed_dot_args_tests, allowed_dot_args_scores)
+    # TODO: Fix this to it actually checks the namespace for the specific alg instead
+    allowed_dot_args_algs <- c("max.sx", "debug", "undirected")
+    allowed_dot_args <- c(
+      allowed_dot_args_tests,
+      allowed_dot_args_scores,
+      allowed_dot_args_algs
+    )
     truly_unrecognised <- setdiff(unclaimed, allowed_dot_args)
 
     if (!allow_dots && length(truly_unrecognised) > 0) {
@@ -386,6 +415,5 @@ check_args_and_distribute_args_bnlearn <- function(
       )
     }
   }
-
   args
 }

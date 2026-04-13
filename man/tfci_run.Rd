@@ -22,16 +22,15 @@ tfci_run(
 \arguments{
 \item{data}{A data frame with the observed variables.}
 
-\item{knowledge}{A \emph{knowledge} object describing tiers/periods and optional
-forbidden/required edges. This replaces the legacy \code{order} interface and
-is the preferred way to supply temporal background knowledge.}
+\item{knowledge}{A \code{Knowledge} object describing tiers/periods and optional
+forbidden/required edges.}
 
 \item{alpha}{The alpha level used as the per-test significance
 threshold for conditional independence testing.}
 
-\item{test}{A conditional independence test. The default \code{reg_test}
+\item{test}{A conditional independence test. The default \code{\link[=reg_test]{reg_test()}}
 uses a regression-based information-loss test. Another available option is
-\code{cor_test} which tests for vanishing partial correlations. User-supplied
+\code{\link[=cor_test]{cor_test()}} which tests for vanishing partial correlations. User-supplied
 functions may also be used; see details for the required interface.}
 
 \item{suff_stat}{A sufficient statistic. If supplied, it is passed directly
@@ -64,9 +63,6 @@ is due to the fact that \pkg{pcalg} does not allow directed edges in
 \item{...}{Additional arguments passed to
 \code{\link[pcalg:skeleton]{pcalg::skeleton()}} during skeleton construction.}
 }
-\value{
-A \code{Disco} object (a list with a \code{caugi} and a \code{knowledge}object).
-}
 \description{
 Use a modification of the FCI algorithm that makes use of background knowledge
 in the format of a partial ordering. This may, for instance, come about when
@@ -85,6 +81,26 @@ latest node.
 After this, the usual FCI orientation rules are applied; see \code{\link[pcalg:udag2pag]{pcalg::udag2pag()}}
 for details.
 }
+\section{Recommendation}{
+
+While it is possible to call the function returned directly with a data frame,
+we recommend using \code{\link[=disco]{disco()}}. This provides a consistent interface and handles knowledge
+integration.
+}
+
+\section{Value}{
+
+A function that takes a single argument \code{data} (a data frame). When called,
+this function returns a list containing:
+\itemize{
+\item \code{knowledge} A \code{Knowledge} object with the background knowledge
+used in the causal discovery algorithm. See \code{\link[=knowledge]{knowledge()}} for how to construct it.
+\item \code{caugi} A \code{\link[caugi:caugi]{caugi::caugi}} object representing the learned causal graph.
+This graph is a PAG (Partial Ancestral Graph), but since PAGs are not yet
+natively supported in \pkg{caugi}, it is currently stored with class \code{UNKNOWN}.
+}
+}
+
 \examples{
 data(tpc_example)
 

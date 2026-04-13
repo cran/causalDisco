@@ -68,11 +68,11 @@ as_tetrad_knowledge <- function(kn) {
 #' * **fixed_gaps**  - forbidding edges (zeros enforced)
 #' * **fixed_edges** - requiring edges (ones enforced)
 #'
-#' This function takes a \code{knowledge} object (with only forbidden/required
+#' This function takes a `Knowledge` object (with only forbidden/required
 #' edges, no tiers) and returns the two logical matrices in the exact
 #' variable order you supply.
 #'
-#' @param kn A \code{knowledge} object.  Must have no tier information.
+#' @param kn A `Knowledge` object.  Must have no tier information.
 #' @param labels Character vector of all variable names, in the exact order
 #'   of your data columns.  Every variable referenced by an edge in \code{kn}
 #'   must appear here.
@@ -112,7 +112,7 @@ as_pcalg_constraints <- function(
 
   is_knowledge(kn)
 
-  if (any(!is.na(kn$vars$tier))) {
+  if (!all(is.na(kn$vars$tier))) {
     stop(
       "Tiered background knowledge cannot be utilised by the pcalg engine.\n",
       "pcalg does not support directed tier constraints."
@@ -215,7 +215,7 @@ as_pcalg_constraints <- function(
 #' `blacklist` contains all forbidden edges. Tiers will be made into forbidden
 #' edges before running the conversion.
 #'
-#' @param kn A \code{knowledge} object.  Must have no tier information.
+#' @param kn A `Knowledge` object.  Must have no tier information.
 #'
 #' @returns A list with two elements, `whitelist` and `blacklist`, each a data
 #' frame containing the edges in a `from`, `to` format.
@@ -259,9 +259,10 @@ as_bnlearn_knowledge <- function(kn) {
 #' @description
 #' Converts a `Knowledge` object to a [caugi::caugi] object used for plotting.
 #'
-#' @param kn A \code{knowledge} object.
+#' @param kn A `Knowledge` object.
 #'
-#' @returns A list with the [caugi::caugi] object alongside information.
+#' @returns A list with the [caugi::caugi] object alongside information about the knowledge (tiers, required and
+#' forbidden edges) that can be used for plotting.
 #'
 #' @examples
 #' data(tpc_example)
@@ -272,7 +273,8 @@ as_bnlearn_knowledge <- function(kn) {
 #'     youth ~ starts_with("youth"),
 #'     old ~ starts_with("old")
 #'   ),
-#'   child_x1 %-->% youth_x3
+#'   child_x1 %-->% youth_x3,
+#'   child_x2 %!-->% youth_x3
 #' )
 #' cg <- knowledge_to_caugi(kn)
 #'
@@ -329,16 +331,27 @@ knowledge_to_caugi <- function(kn) {
     names(tiers) <- tier_levels
   }
 
+  ## ---- extract required and forbidden edges ----
+  required_edges <- forbidden_edges <- NULL
+  if (nrow(edges) > 0) {
+    edges_split <- split(edges[, c("from", "to")], edges$status)
+
+    required_edges <- edges_split[["required"]]
+    forbidden_edges <- edges_split[["forbidden"]]
+  }
+
   ## ---- return list ----
   list(
     caugi = cg,
-    tiers = tiers
+    tiers = tiers,
+    required_edges = required_edges,
+    forbidden_edges = forbidden_edges
   )
 }
 
-#' Combine knowledge and caugi object
+#' Combine Knowledge and caugi object
 #' @param cg A [caugi::caugi] object.
-#' @param kcg A `Disco` object.
+#' @param kn A `Knowledge` object.
 #' @returns A list with the updated [caugi::caugi] object alongside information.
 #' @keywords internal
 #' @noRd

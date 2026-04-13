@@ -21,7 +21,6 @@
   nlev = NULL
 ) {
   method <- tolower(method)
-
   if (
     method %in%
       c(
@@ -60,20 +59,29 @@
 
   fun <- switch(
     method,
-    "fisher_z" = pcalg::gaussCItest,
-    "g_square" = g_square_switch,
-    "reg" = reg_test,
-    "fisher_z_twd" = micd::gaussCItwd,
-    "fisher_z_mi" = micd::gaussMItest,
-    "conditional_gaussian" = micd::mixCItest,
-    "conditional_gaussian_twd" = micd::mixCItwd,
-    "conditional_gaussian_mi" = micd::mixMItest,
-    "g_square_twd" = micd::disCItwd,
-    "g_square_mi" = micd::disMItest,
+    "fisher_z" = .decorate_test(pcalg::gaussCItest, missing_mode = "none"),
+    "g_square" = .decorate_test(g_square_switch, missing_mode = "none"),
+    "reg" = .decorate_test(reg_test, missing_mode = "none"),
+    "fisher_z_twd" = .decorate_test(micd::gaussCItwd, missing_mode = "na"),
+    "fisher_z_mi" = .decorate_test(micd::gaussMItest, missing_mode = "mi"),
+    "conditional_gaussian" = .decorate_test(
+      micd::mixCItest,
+      missing_mode = "none"
+    ),
+    "conditional_gaussian_twd" = .decorate_test(
+      micd::mixCItwd,
+      missing_mode = "na"
+    ),
+    "conditional_gaussian_mi" = .decorate_test(
+      micd::mixMItest,
+      missing_mode = "mi"
+    ),
+    "g_square_twd" = .decorate_test(micd::disCItwd, missing_mode = "na"),
+    "g_square_mi" = .decorate_test(micd::disMItest, missing_mode = "mi"),
     stop(paste0("Unknown method: ", method), call. = FALSE)
   )
 
-  if (suff_stat == FALSE) {
+  if (!suff_stat) {
     return(list(method = fun, suff_stat = NULL))
   }
   if (is.null(X)) {
@@ -108,18 +116,20 @@
 
     # gaussian
     "fisher_z" = {
-      X_num <- as.matrix(X)
+      X_num <- X
       list(C = stats::cor(X_num), n = nrow(X_num))
     },
     "fisher_z_twd" = {
-      as.matrix(X)
+      X
     },
     "fisher_z_mi" = {
       if (inherits(X, "mids")) {
+        if (!requireNamespace("mice", quietly = TRUE)) {
+          stop("Package 'mice' is required but not installed.", call. = FALSE)
+        }
         X <- mice::complete(X, action = "all")
-      }
-      if (!is.list(X)) {
-        stop("gaussMItest requires a list or a mids object.", call. = FALSE)
+      } else {
+        stop("fisher_z_mi requires a mids object.", call. = FALSE)
       }
       C <- lapply(X, stats::cor)
       n <- nrow(X[[1]])
@@ -137,6 +147,9 @@
     },
     "g_square_mi" = {
       if (inherits(X, "mids")) {
+        if (!requireNamespace("mice", quietly = TRUE)) {
+          stop("Package 'mice' is required but not installed.", call. = FALSE)
+        }
         X <- mice::complete(X, action = "all")
       }
       if (!is.list(X)) {
@@ -147,13 +160,16 @@
 
     # mixed
     "conditional_gaussian" = {
-      as.data.frame(X)
+      X
     },
     "conditional_gaussian_twd" = {
-      as.data.frame(X)
+      X
     },
     "conditional_gaussian_mi" = {
       if (inherits(X, "mids")) {
+        if (!requireNamespace("mice", quietly = TRUE)) {
+          stop("Package 'mice' is required but not installed.", call. = FALSE)
+        }
         X <- mice::complete(X, action = "all")
       }
       if (!is.list(X)) {
@@ -164,7 +180,7 @@
 
     # regression test
     "reg" = {
-      df <- as.data.frame(X)
+      df <- X
       binary <- vapply(df, .classify_binary, logical(1))
       list(data = df, binary = binary)
     },
@@ -204,3 +220,19 @@
   }
   FALSE
 }
+
+#' @title Decorate CI test function with metadata
+#' @param fun function; the CI test function to decorate
+#' @param missing_mode character; one of "none", "na", or "mi".
+#'  "none" means the test does not support missing data, "na" means
+#'  it supports missing data, and
+#'  "mi" means it supports missing data via multiple imputation.
+#' @keywords internal
+#' @noRd
+.decorate_test <- function(fun, missing_mode = "none") {
+  attr(fun, "missing_mode") <- missing_mode
+  fun
+}
+
+reg_test <- .decorate_test(reg_test, missing_mode = "none")
+cor_test <- .decorate_test(cor_test, missing_mode = "none")

@@ -1,8 +1,8 @@
 #' @title TGES Algorithm for Causal Discovery
 #'
 #' @description
-#' Run the Temporal GES algorithm for causal discovery using the causalDisco
-#' engine.
+#' Run the Temporal Greedy Equivalent Search algorithm for causal discovery using one of
+#' several engines.
 #'
 #' @param engine Character; which engine to use. Must be one of:
 #'   \describe{
@@ -13,14 +13,16 @@
 #' (e.g. test or algorithm parameters).
 #'
 #' @details
-#' For specific details on the supported scores, see [CausalDiscoSearch]. For additional parameters passed
-#' via \code{...}, see [tges_run()].
+#' For specific details on the supported scores, see [CausalDiscoSearch]. For additional parameters
+#' passed via \code{...}, see [tges_run()].
 #'
 #' @example inst/roxygen-examples/tges-example.R
 #'
 #' @inheritSection disco_note Recommendation
 #' @inheritSection disco_algs_return_doc_pdag Value
-#'
+#' @references
+#' Larsen TE, Ekstrøm CT, and Petersen AH. Score-Based Causal Discovery with Temporal
+#' Background Information, 2025. <doi:10.48550/arXiv.2502.06232>.
 #' @family causal discovery algorithms
 #' @concept cd_algorithms
 #' @export
@@ -29,71 +31,18 @@ tges <- function(
   score,
   ...
 ) {
-  .check_if_pkgs_are_installed(
-    pkgs = c(
-      "rlang"
-    ),
-    function_name = "tges"
-  )
-
   engine <- match.arg(engine)
-  args <- rlang::list2(...)
 
-  builder <- function(knowledge = NULL) {
-    runner <- switch(
-      engine,
-      causalDisco = rlang::exec(
-        tges_causalDisco_runner,
-        score,
-        !!!args
-      )
-    )
-    runner
-  }
-
-  method <- disco_method(builder, "tges")
-  attr(method, "engine") <- engine
-  attr(method, "graph_class") <- "PDAG"
-  method
-}
-
-#' @keywords internal
-tges_causalDisco_runner <- function(
-  score,
-  ...,
-  directed_as_undirected_knowledge = FALSE
-) {
-  .check_if_pkgs_are_installed(
-    pkgs = c(
-      "pcalg"
+  make_method(
+    method_name = "tges",
+    engine = engine,
+    engine_fns = list(
+      causalDisco = function(...) {
+        make_runner(engine = "causalDisco", alg = "tges", ...)
+      }
     ),
-    function_name = "tges_causalDisco_runner"
+    score = score,
+    graph_class = "PDAG",
+    ...
   )
-
-  args <- list(...)
-  search <- CausalDiscoSearch$new()
-  args_to_pass <- check_args_and_distribute_args(
-    search = search,
-    args = args,
-    engine = "causalDisco",
-    alg = "tges",
-    score = score
-  )
-  search$set_params(args_to_pass$alg_args)
-  search$set_score(score, args_to_pass$score_args)
-  search$set_alg("tges")
-
-  runner <- list(
-    set_knowledge = function(knowledge) {
-      search$set_knowledge(
-        knowledge,
-        directed_as_undirected = directed_as_undirected_knowledge
-      )
-    },
-    run = function(data) {
-      search$run_search(data, set_suff_stat = FALSE)
-    }
-  )
-
-  runner
 }

@@ -7,17 +7,17 @@
 #' @description
 #' Run a tier-aware variant of the PC algorithm that respects background
 #' knowledge about a partial temporal order. Supply the temporal order via a
-#' \code{knowledge} object.
+#' `Knowledge` object.
 #'
 #' @param data A data frame with the observed variables.
-#' @param knowledge A \code{knowledge} object created with \code{knowledge()},
+#' @param knowledge A `Knowledge` object created with [knowledge()],
 #'   encoding tier assignments and optional forbidden/required edges. This is
 #'   the preferred way to provide temporal background knowledge.
 #' @param alpha The alpha level used as the per-test significance
 #'   threshold for conditional independence testing.
-#' @param test A conditional independence test. The default \code{reg_test}
+#' @param test A conditional independence test. The default [reg_test()]
 #'   uses a regression-based information-loss test. Another available option is
-#'   \code{cor_test} which tests for vanishing partial correlations. User-supplied
+#'   [cor_test()] which tests for vanishing partial correlations. User-supplied
 #'   functions may also be used; see details for the required interface.
 #' @param suff_stat A sufficient statistic. If supplied, it is passed directly
 #'   to the test and no statistics are computed from \code{data}. Its structure
@@ -44,8 +44,8 @@
 #' @details
 #' Any independence test implemented in \pkg{pcalg} may be used; see
 #' [pcalg::pc()]. When \code{na_method = "twd"}, test-wise deletion is
-#' performed: for \code{cor_test}, each pairwise correlation uses complete cases;
-#' for \code{reg_test}, each conditional test performs its own deletion. If you
+#' performed: for [cor_test()], each pairwise correlation uses complete cases;
+#' for [reg_test()], each conditional test performs its own deletion. If you
 #' supply a user-defined \code{test}, you must also provide \code{suff_stat}.
 #'
 #' Temporal or tiered knowledge enters in two places:
@@ -56,7 +56,8 @@
 #'   forward in time.
 #' }
 #'
-#' @return A `Disco` object (a list with a `caugi` and a `knowledge` object).
+#' @inheritSection disco_note Recommendation
+#' @inheritSection disco_algs_return_doc_pdag Value
 #'
 #' @example inst/roxygen-examples/tpc-example.R
 #'
@@ -95,6 +96,8 @@ tpc_run <- function(
   directed_as_undirected <- prep$directed_as_undirected
   test <- prep$internal_test # Ensure we use the internal test with camelCase so it works downstream with pcalg
 
+  knowledge <- prepare_knowledge(knowledge) # Precompute variable ranks for efficient access
+
   # check orientation method
   if (!(orientation_method %in% c("standard", "conservative", "maj.rule"))) {
     stop(
@@ -126,11 +129,9 @@ tpc_run <- function(
   )
   ntests <- sum(skel@n.edgetests)
 
-  # caugi assumes rows are the "from" nodes and columns the "to" nodes.
-  from_to <- TRUE
-  res <- tpdag(skel, knowledge = knowledge, from_to = from_to)
-
-  cg <- caugi::as_caugi(res, collapse = TRUE, class = "PDAG")
+  res <- tpdag(skel, knowledge = knowledge)
+  # caugi assumes rows are the "from" nodes and columns the "to" nodes, so transpose.
+  cg <- caugi::as_caugi(t(res), collapse = TRUE, class = "UNKNOWN")
   as_disco(cg, knowledge)
 }
 
@@ -142,7 +143,7 @@ tpc_run <- function(
 #'
 #' @description
 #' Helper that converts a character \code{order} of prefixes into a
-#' \code{knowledge} object by creating one tier per prefix and assigning
+#' `Knowledge` object by creating one tier per prefix and assigning
 #' variables with \code{tidyselect::starts_with("<prefix>")}.
 #'
 #' @param order Character vector of prefixes in temporal order.
@@ -152,7 +153,7 @@ tpc_run <- function(
 #'
 #' @example inst/roxygen-examples/dot-build_knowledge_from_order-example.R
 #'
-#' @return A \code{knowledge} object with tiers matching \code{order}.
+#' @return A `Knowledge` object with tiers matching \code{order}.
 #' @keywords internal
 #' @noRd
 .build_knowledge_from_order <- function(order, data = NULL, vnames = NULL) {
@@ -298,7 +299,7 @@ find_adjacencies <- function(amatrix, index) {
 #' Map variable names to their tier ranks according to a \code{knowledge}
 #' object. Variables without a tier receive \code{NA}.
 #'
-#' @param kn A \code{knowledge} object.
+#' @param kn A `Knowledge` object.
 #' @param vnames Character vector of variable names.
 #'
 #' @example inst/roxygen-examples/dot-tier_index-example.R
@@ -307,13 +308,6 @@ find_adjacencies <- function(amatrix, index) {
 #' @keywords internal
 #' @noRd
 .tier_index <- function(kn, vnames) {
-  .check_if_pkgs_are_installed(
-    pkgs = c(
-      "stats"
-    ),
-    function_name = ".tier_index"
-  )
-
   is_knowledge(kn)
   idx <- match(vnames, kn$vars$var)
   tiers <- kn$vars$tier[idx]
@@ -321,24 +315,16 @@ find_adjacencies <- function(amatrix, index) {
   stats::setNames(rank, vnames)
 }
 
-#' Check whether one variable is strictly after another in tier order
-#'
-#' @param x,y Variable names.
-#' @param knowledge A \code{knowledge} object.
-#'
-#' @example inst/roxygen-examples/is_after-example.R
-#'
-#' @return Logical. \code{TRUE} if \code{x} is in a strictly later tier than
-#' \code{y}. Returns \code{FALSE} if either variable lacks a tier.
-#'
-#' @keywords internal
-#' @noRd
-is_after <- function(x, y, knowledge) {
-  ti <- .tier_index(knowledge, c(x, y))
-  if (any(is.na(ti))) {
-    return(FALSE)
-  }
-  ti[[1]] > ti[[2]]
+prepare_knowledge <- function(kn) {
+  is_knowledge(kn)
+
+  # Direct variable -> tier rank mapping
+  kn$.__var_rank <- stats::setNames(
+    match(kn$vars$tier, kn$tiers$label),
+    kn$vars$var
+  )
+
+  kn
 }
 
 #' Directed indepTest wrapper that forbids conditioning on the future
@@ -351,7 +337,7 @@ is_after <- function(x, y, knowledge) {
 #' @param test A function \code{f(x, y, S, suff_stat)} returning a p-value or
 #'   test statistic compatible with \pkg{pcalg}.
 #' @param vnames Character vector of variable names (labels).
-#' @param knowledge A \code{knowledge} object.
+#' @param knowledge A `Knowledge` object.
 #'
 #' @example inst/roxygen-examples/dir_test-example.R
 #'
@@ -359,22 +345,29 @@ is_after <- function(x, y, knowledge) {
 #' @keywords internal
 #' @noRd
 dir_test <- function(test, vnames, knowledge) {
-  function(x, y, S, suffStat) {
-    snames <- vnames[S]
-    xname <- vnames[x]
-    yname <- vnames[y]
+  vr <- knowledge$.__var_rank
 
-    if (length(snames)) {
+  function(x, y, conditioning_set, suff_stat) {
+    snames <- vnames[conditioning_set]
+    x_rank <- vr[[vnames[x]]]
+    y_rank <- vr[[vnames[y]]]
+
+    if (length(snames) && !is.na(x_rank) && !is.na(y_rank)) {
       for (s in snames) {
+        s_rank <- vr[[s]]
         if (
-          isTRUE(is_after(s, xname, knowledge)) &&
-            isTRUE(is_after(s, yname, knowledge))
+          !is.na(s_rank) &&
+            s_rank > x_rank &&
+            s_rank > y_rank
         ) {
           return(0)
         }
       }
     }
-    do.call(test, list(x = x, y = y, S = S, suffStat = suffStat))
+    do.call(
+      test,
+      list(x = x, y = y, S = conditioning_set, suffStat = suff_stat)
+    )
   }
 }
 
@@ -386,7 +379,7 @@ dir_test <- function(test, vnames, knowledge) {
 #' annotations are ignored here; use \code{order_restrict_amat_cpdag()} for
 #' tier-based pruning.
 #'
-#' @param kn A \code{knowledge} object.
+#' @param kn A `Knowledge` object.
 #' @param labels Character vector of variable names in the desired order.
 #'
 #' @example inst/roxygen-examples/dot-pcalg_constraints_from_knowledge-example.R
@@ -415,16 +408,14 @@ dir_test <- function(test, vnames, knowledge) {
 #' points from a later tier into an earlier tier.
 #'
 #' @param amat Square adjacency matrix (from-to convention).
-#' @param knowledge A \code{knowledge} object with tier labels.
-#' @param from_to Logical; if \code{TRUE} assume a from-to adjacency matrix (i.e. rows are the
-#' "from" nodes and the columns are the "to" nodes). If \code{FALSE}, assume the opposite.
+#' @param knowledge A `Knowledge` object with tier labels.
 #'
 #' @example inst/roxygen-examples/order_restrict_amat_cpdag-example.R
 #'
 #' @return The pruned adjacency matrix.
 #' @keywords internal
 #' @noRd
-order_restrict_amat_cpdag <- function(amat, knowledge, from_to) {
+order_restrict_amat_cpdag <- function(amat, knowledge) {
   p <- nrow(amat)
   vnames <- rownames(amat)
   tr <- .tier_index(knowledge, vnames)
@@ -436,11 +427,7 @@ order_restrict_amat_cpdag <- function(amat, knowledge, from_to) {
   for (i in seq_len(p)) {
     for (j in seq_len(p)) {
       if (!is.na(tr[i]) && !is.na(tr[j]) && tr[i] > tr[j]) {
-        if (from_to) {
-          amat[i, j] <- 0
-        } else {
-          amat[j, i] <- 0
-        }
+        amat[j, i] <- 0
       }
     }
   }
@@ -455,28 +442,25 @@ order_restrict_amat_cpdag <- function(amat, knowledge, from_to) {
 #' orientation under background knowledge.
 #'
 #' @param skel A [pcalg::pcAlgo-class] skeleton result.
-#' @param knowledge A \code{knowledge} object with tiers (and optionally edges).
-#' @param from_to Logical; if \code{TRUE} assume a from-to adjacency matrix (i.e. rows are the
-#' "from" nodes and the columns are the "to" nodes). If \code{FALSE}, assume the opposite.
+#' @param knowledge A `Knowledge` object with tiers (and optionally edges).
 #'
 #' @example inst/roxygen-examples/tpdag-example.R
 #'
 #' @return A [pcalg::pcAlgo-class] object with an oriented graph.
 #' @keywords internal
 #' @noRd
-tpdag <- function(skel, knowledge, from_to) {
+tpdag <- function(skel, knowledge) {
   .check_if_pkgs_are_installed(
     pkgs = c(
       "pcalg"
     ),
     function_name = "tpdag"
   )
-  cg <- caugi::as_caugi(skel@graph, collapse = TRUE, class = "PDAG")
+  cg <- caugi::as_caugi(skel@graph, collapse = TRUE, class = "UNKNOWN")
   amat <- caugi::as_adjacency(cg)
   skel_amat <- order_restrict_amat_cpdag(
     amat,
-    knowledge = knowledge,
-    from_to = from_to
+    knowledge = knowledge
   )
   pcalg::addBgKnowledge(
     v_orient_temporal(skel_amat, skel@sepset),

@@ -22,18 +22,17 @@
 #' for details.
 #'
 #' @inheritParams tpc_run
-#' @param knowledge A \emph{knowledge} object describing tiers/periods and optional
-#'   forbidden/required edges. This replaces the legacy \code{order} interface and
-#'   is the preferred way to supply temporal background knowledge.
+#' @param knowledge A `Knowledge` object describing tiers/periods and optional
+#'   forbidden/required edges.
 #' @param orientation_method Method for handling conflicting separating sets when orienting
 #'   edges; must be one of \code{"standard"}, \code{"conservative"} (the default) or
 #'   \code{"maj.rule"}. See [pcalg::pc()] for further details.
 #'
-#' @return A `Disco` object (a list with a `caugi` and a `knowledge`object).
+#' @inheritSection disco_note Recommendation
+#' @inheritSection disco_algs_return_doc_pag Value
 #'
 #' @example inst/roxygen-examples/tfci-example.R
 #'
-#' @include tpc-run.R
 #' @importClassesFrom pcalg pcAlgo
 #' @export
 tfci_run <- function(
@@ -69,6 +68,8 @@ tfci_run <- function(
   na_method <- prep$na_method
   directed_as_undirected <- prep$directed_as_undirected
   test <- prep$internal_test # Ensure we use the internal test with camelCase so it works downstream with pcalg
+
+  knowledge <- prepare_knowledge(knowledge) # Precompute variable ranks for efficient access
 
   # check orientation method
   if (!(orientation_method %in% c("standard", "conservative", "maj.rule"))) {
@@ -169,7 +170,7 @@ tfci_run <- function(
 #'
 #' @param amat A square numeric adjacency matrix in pcalg PAG format
 #'   (rows/columns named by variable names).
-#' @param knowledge A \emph{knowledge} object that provides tier labels for variables.
+#' @param knowledge A `Knowledge` object that provides tier labels for variables.
 #'
 #' @example inst/roxygen-examples/order_restrict_pag_skel-example.R
 #'
@@ -178,15 +179,21 @@ tfci_run <- function(
 #' @keywords internal
 #' @noRd
 order_restrict_pag_skel <- function(amat, knowledge) {
+  vr <- knowledge$.__var_rank
   p <- nrow(amat)
   vnames <- rownames(amat)
 
   for (i in seq_len(p)) {
     for (j in seq_len(p)) {
-      if (amat[j, i] != 0 && is_after(vnames[i], vnames[j], knowledge)) {
-        # place an arrowhead at the later node
-        amat[j, i] <- 2
-        # note: [i,j] stays as-is (typically 1: circle) in the skeleton
+      if (amat[j, i] != 0) {
+        x_rank <- vr[[vnames[i]]]
+        y_rank <- vr[[vnames[j]]]
+
+        if (!is.na(x_rank) && !is.na(y_rank) && x_rank > y_rank) {
+          # Place an arrowhead at the later node
+          amat[j, i] <- 2
+          # Note: [i,j] stays as-is (typically 1: circle) in the skeleton
+        }
       }
     }
   }
@@ -202,7 +209,7 @@ order_restrict_pag_skel <- function(amat, knowledge) {
 #' @param sepset A nested list of separating sets, typically \code{skel@sepset}
 #'   from \pkg{pcalg}, where \code{sepset[[i]][[j]]} is a vector of node indices
 #'   that separate node \code{i} and node \code{j}, or \code{NULL}.
-#' @param knowledge A \emph{knowledge} object that provides tier labels for variables.
+#' @param knowledge A `Knowledge` object that provides tier labels for variables.
 #' @param vnames Character vector of variable names, used to translate indices in
 #'   \code{sepset} into names for tier comparison.
 #'
@@ -213,20 +220,26 @@ order_restrict_pag_skel <- function(amat, knowledge) {
 #' @keywords internal
 #' @noRd
 order_restrict_sepset <- function(sepset, knowledge, vnames) {
+  vr <- knowledge$.__var_rank
   p <- length(vnames)
 
   for (i in seq_len(p)) {
     for (j in seq_len(p)) {
       sep_set <- sepset[[i]][[j]]
       if (length(sep_set) > 0) {
-        for (k in seq_along(sep_set)) {
-          if (
-            is_after(vnames[sep_set[k]], vnames[i], knowledge) &&
-              is_after(vnames[sep_set[k]], vnames[j], knowledge)
-          ) {
-            sepset[[i]][[j]] <- NULL
-            warning("Found sepset that was not allowed due to temporal order!")
-            break
+        x_rank <- vr[[vnames[i]]]
+        y_rank <- vr[[vnames[j]]]
+
+        if (!is.na(x_rank) && !is.na(y_rank)) {
+          for (k in seq_along(sep_set)) {
+            s_rank <- vr[[vnames[sep_set[k]]]]
+            if (!is.na(s_rank) && s_rank > x_rank && s_rank > y_rank) {
+              sepset[[i]][[j]] <- NULL
+              warning(
+                "Found sepset that was not allowed due to temporal order!"
+              )
+              break
+            }
           }
         }
       }
@@ -245,7 +258,7 @@ order_restrict_sepset <- function(sepset, knowledge, vnames) {
 #' @param skel A skeleton-like object as returned by [pcalg::pdsep()],
 #'   containing \code{$G} (adjacency), \code{$sepset}, \code{$pMax}, and
 #'   \code{$max.ord}.
-#' @param knowledge A \emph{knowledge} object that provides tier labels for variables.
+#' @param knowledge A `Knowledge` object that provides tier labels for variables.
 #' @param unfaithful_triples Optional vector of unfaithful triples from conservative/majority-rule
 #'   orientation (see \pkg{pcalg} under \code{unfVect}); may be \code{NULL}.
 #' @param cautious Logical; if \code{TRUE}, remove any separating set that violates

@@ -5,7 +5,7 @@
 #' background knowledge.
 #'
 #' - **Required edges** are drawn in **blue** by default (`required_col`), can be changed.
-#' - **Forbidden edges** are not drawn by.
+#' - **Forbidden edges** are not drawn.
 #' - If tiered knowledge is provided, nodes are arranged according to their tiers.
 #' - Other edge styling (line width, arrow size, etc.) can be supplied via `edge_style`.
 #'   To override the color of a specific edge, specify it in
@@ -150,7 +150,7 @@ plot.Disco <- function(
 
 #' Plot a Knowledge Object
 #'
-#' Visualize a `knowledge` object as a directed graph using [caugi::plot()].
+#' Visualize a `Knowledge` object as a directed graph using [caugi::plot()].
 #'
 #' - **Required edges** are drawn in **blue** by default (can be changed via `required_col`).
 #' - **Forbidden edges** are drawn in **red** by default (can be changed via `forbidden_col`). If A to B and B to
@@ -160,7 +160,7 @@ plot.Disco <- function(
 #'   `edge_style` argument. To override the color of a specific edge, use
 #'   `edge_style$by_edge[[from]][[to]]$col`.
 #'
-#' @param x A `knowledge` object, created using [knowledge()].
+#' @param x A `Knowledge` object, created using [knowledge()].
 #' @param required_col Character(1). Color for edges marked as "required". Default `"blue"`.
 #' @param forbidden_col Character(1). Color for edges marked as "forbidden". Default `"red"`.
 #' @param ... Additional arguments passed to [caugi::plot()], e.g., `node_style`, `edge_style`.
@@ -285,29 +285,42 @@ plot.Knowledge <- function(
   tiers <- info_object$tiers
 
   # TODO: When caugi supports curved edges, modify this to use curved edges (sometimes)...
-  # --- Build automatic edge styles for required/forbidden edges ---
   auto_edge_styles <- list(by_edge = list())
-  if (!is.null(x$edges) && nrow(x$edges) > 0) {
-    for (i in seq_len(nrow(x$edges))) {
-      from <- x$edges$from[i]
-      to <- x$edges$to[i]
-      status <- x$edges$status[i]
 
-      col <- switch(
-        status,
-        required = required_col,
-        forbidden = forbidden_col,
-        NULL
-      )
-      if (!is.null(col)) {
-        if (is.null(auto_edge_styles$by_edge[[from]])) {
-          auto_edge_styles$by_edge[[from]] <- list()
-        }
-        auto_edge_styles$by_edge[[from]][[to]] <- list(
-          col = col,
-          fill = col
-        )
+  # --- add required edges ---
+  if (
+    !is.null(info_object$required_edges) && nrow(info_object$required_edges) > 0
+  ) {
+    for (i in seq_len(nrow(info_object$required_edges))) {
+      from <- info_object$required_edges$from[i]
+      to <- info_object$required_edges$to[i]
+
+      if (is.null(auto_edge_styles$by_edge[[from]])) {
+        auto_edge_styles$by_edge[[from]] <- list()
       }
+      auto_edge_styles$by_edge[[from]][[to]] <- list(
+        col = required_col,
+        fill = required_col
+      )
+    }
+  }
+
+  # --- add forbidden edges ---
+  if (
+    !is.null(info_object$forbidden_edges) &&
+      nrow(info_object$forbidden_edges) > 0
+  ) {
+    for (i in seq_len(nrow(info_object$forbidden_edges))) {
+      from <- info_object$forbidden_edges$from[i]
+      to <- info_object$forbidden_edges$to[i]
+
+      if (is.null(auto_edge_styles$by_edge[[from]])) {
+        auto_edge_styles$by_edge[[from]] <- list()
+      }
+      auto_edge_styles$by_edge[[from]][[to]] <- list(
+        col = forbidden_col,
+        fill = forbidden_col
+      )
     }
   }
 
@@ -363,7 +376,7 @@ plot_caugi_common <- function(
   # Check tiers
   has_tiers <- length(tiers) > 0 &&
     !all(sapply(tiers, function(x) all(is.na(x))))
-  any_na_tiers <- any(sapply(tiers, function(x) any(is.na(x))))
+  any_na_tiers <- any(sapply(tiers, function(x) anyNA(x)))
 
   # Prepare plot arguments
   plot_args <- list(cg, edge_style = merged_edge_styles)
@@ -381,11 +394,11 @@ plot_caugi_common <- function(
 
 #' Plot Method for causalDisco Objects
 #'
-#' This is the generic `plot()` function for objects of class [knowledge]
-#' or [disco]. It dispatches to the class-specific plotting methods
+#' This is the generic `plot()` function for objects of class `Knowledge`
+#' or `Disco`. It dispatches to the class-specific plotting methods
 #' [plot.Knowledge()] and [plot.Disco()].
 #'
-#' @param x An object to plot (class [knowledge] or [disco]).
+#' @param x An object to plot (class `Knowledge` or `Disco`).
 #' @param ... Additional arguments passed to class-specific plot methods and to [caugi::plot()].
 #'
 #' @return Invisibly returns the input object. The primary effect is the generated plot.

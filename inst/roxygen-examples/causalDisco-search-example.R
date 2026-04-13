@@ -3,7 +3,7 @@
 
 data(tpc_example)
 
-# background knowledge (tiers + one exogenous var)
+# background knowledge (tiered knowledge)
 kn <- knowledge(
   tpc_example,
   tier(
@@ -36,7 +36,7 @@ s_tpc$set_data(tpc_example)
 res_tpc <- s_tpc$run_search()
 print(res_tpc)
 
-# Switch to TFCI on the same object (reuses suffStat/test)
+# Switch to TFCI on the same object (reuses suff_stat/test)
 s_tpc$set_alg("tfci")
 res_tfci <- s_tpc$run_search()
 print(res_tfci)
@@ -66,5 +66,5 @@ try(CausalDiscoSearch$new()$set_test("not_a_test"))
 try(CausalDiscoSearch$new()$set_score("not_a_score"))
 try(CausalDiscoSearch$new()$set_alg("not_an_alg"))
 
-# set_knowledge() requires a `knowledge` object
+# set_knowledge() requires a `Knowledge` object
 try(CausalDiscoSearch$new()$set_knowledge(list(not = "Knowledge")))

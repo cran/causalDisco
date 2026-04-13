@@ -13,7 +13,11 @@ test_that("methods construct disco_method closures and run across engines", {
       m <- do.call(reg$fn, c(list(engine = engine), args))
 
       expect_s3_class(m, c(method_name, "disco_method", "function"))
-      expect_error(m(1:3), "`data` must be a data frame.", fixed = TRUE)
+      expect_error(
+        m(1:3),
+        "`data` must be a data frame or a `mids` object.",
+        fixed = TRUE
+      )
 
       res <- m(num_data)
       expect_s3_class(res, "Disco")
@@ -90,6 +94,14 @@ test_that("disco() injects knowledge and validates method type (pc + fci)", {
             "Cannot mutate graph to class 'PDAG'.",
             fixed = TRUE
           )
+        } else if (engine == "tetrad" && method_name == "fci") {
+          expect_warning(
+            {
+              res <- disco(num_data, method = m, knowledge = kn)
+            },
+            "The Tetrad FCI-family",
+            fixed = TRUE
+          )
         } else {
           res <- disco(num_data, method = m, knowledge = kn)
         }
@@ -116,73 +128,4 @@ test_that("disco() forwards knowledge errors from set_knowledge() (pc + fci)", {
       )
     }
   }
-})
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Direct runner tests (pc + fci)
-# ──────────────────────────────────────────────────────────────────────────────
-
-test_that("pc and fci runners wire arguments correctly for each engine", {
-  skip_if_no_tetrad()
-  data(num_data)
-
-  # pc: Tetrad (incl. extra test/alg params)
-  runner_t_pc <- pc_tetrad_runner(test = "fisher_z", alpha = 0.05)
-  expect_type(runner_t_pc, "list")
-  expect_true(is.function(runner_t_pc$run))
-  expect_s3_class(runner_t_pc$run(num_data), "Disco")
-
-  runner_t_pc2 <- pc_tetrad_runner(
-    test = "fisher_z",
-    alpha = 0.05,
-    singularity_lambda = 0.1,
-    guarantee_cpdag = TRUE
-  )
-  expect_type(runner_t_pc2, "list")
-  expect_true(is.function(runner_t_pc2$run))
-  expect_s3_class(runner_t_pc2$run(num_data), "Disco")
-
-  # pc: pcalg (+ alg args path via m.max)
-  runner_p_pc <- pc_pcalg_runner(
-    test = "fisher_z",
-    alpha = 0.05,
-    m.max = 1L,
-    directed_as_undirected_knowledge = TRUE
-  )
-  expect_type(runner_p_pc, "list")
-  expect_true(is.function(runner_p_pc$run))
-  expect_s3_class(runner_p_pc$run(num_data), "Disco")
-
-  # pc: bnlearn
-  runner_b_pc <- pc_bnlearn_runner(test = "fisher_z", alpha = 0.05)
-  expect_type(runner_b_pc, "list")
-  expect_true(is.function(runner_b_pc$run))
-  expect_s3_class(runner_b_pc$run(num_data), "Disco")
-
-  # fci: Tetrad (incl. extra test/alg params)
-  runner_t_fci <- fci_tetrad_runner(test = "fisher_z", alpha = 0.05)
-  expect_type(runner_t_fci, "list")
-  expect_true(is.function(runner_t_fci$run))
-  expect_s3_class(runner_t_fci$run(num_data), "Disco")
-
-  runner_t_fci2 <- fci_tetrad_runner(
-    test = "fisher_z",
-    alpha = 0.05,
-    singularity_lambda = 0.1,
-    depth = 2L
-  )
-  expect_type(runner_t_fci2, "list")
-  expect_true(is.function(runner_t_fci2$run))
-  expect_s3_class(runner_t_fci2$run(num_data), "Disco")
-
-  # fci: pcalg (+ alg args path)
-  runner_p_fci <- fci_pcalg_runner(
-    test = "fisher_z",
-    alpha = 0.05,
-    m.max = 1L,
-    directed_as_undirected_knowledge = TRUE
-  )
-  expect_type(runner_p_fci, "list")
-  expect_true(is.function(runner_p_fci$run))
-  expect_s3_class(runner_p_fci$run(num_data), "Disco")
 })

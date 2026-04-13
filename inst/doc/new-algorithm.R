@@ -1,13 +1,10 @@
-## ----include = FALSE----------------------------------------------------------
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-
-## ----setup--------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+#| label: setup
 library(causalDisco)
 
-## ----hpc function-------------------------------------------------------------
+
+## -----------------------------------------------------------------------------
+#| label: hpc function
 hpc <- function(
   engine = c("bnlearn"),
   test,
@@ -15,61 +12,31 @@ hpc <- function(
   ...
 ) {
   engine <- match.arg(engine)
-  args <- rlang::list2(...)
 
-  builder <- function(knowledge = NULL) {
-    runner <- switch(
-      engine,
-      bnlearn = rlang::exec(
-        hpc_bnlearn_runner,
-        test = test,
-        alpha = alpha,
-        !!!args
-      )
-    )
-    runner
-  }
-  method <- new_disco_method(
-    builder = builder,
-    name = "hpc",
+  make_method(
+    method_name = "hpc",
     engine = engine,
-    graph_class = "PDAG"
+    engine_fns = list(
+      bnlearn = function(...) make_runner(engine = "bnlearn", alg = "hpc", ...)
+    ),
+    test = test,
+    alpha = alpha,
+    graph_class = "PDAG",
+    ...
   )
-  method
 }
 
-## ----hpc runner---------------------------------------------------------------
-hpc_bnlearn_runner <- function(test, alpha, ...) {
-  args <- list(...)
-  search <- BnlearnSearch$new()
-  args_to_pass <- distribute_engine_args(
-    search = search,
-    args = args,
-    engine = "bnlearn",
-    alg = "hpc"
-  )
 
-  search$set_test(test, alpha)
-  search$set_alg("hpc", args_to_pass)
-
-  runner <- list(
-    set_knowledge = function(knowledge) {
-      search$set_knowledge(knowledge)
-    },
-    run = function(data) {
-      search$run_search(data)
-    }
-  )
-  runner
-}
-
-## ----hpc example--------------------------------------------------------------
+## -----------------------------------------------------------------------------
+#| label: hpc example
 data(tpc_example)
 hpc_bnlearn <- hpc(engine = "bnlearn", test = "fisher_z", alpha = 0.05)
 hpc_bnlearn_result <- disco(tpc_example, hpc_bnlearn)
 plot(hpc_bnlearn_result)
 
+
 ## -----------------------------------------------------------------------------
+#| label: register algorithm
 register_tetrad_algorithm(
   "my_boss_variant",
   function(
@@ -94,75 +61,48 @@ register_tetrad_algorithm(
   }
 )
 
+
 ## -----------------------------------------------------------------------------
+#| label: my_boss_variant function
 my_boss_variant <- function(
   engine = "tetrad",
   score,
   ...
 ) {
   engine <- match.arg(engine)
-  args <- rlang::list2(...)
 
-  builder <- function(knowledge = NULL) {
-    runner <- switch(
-      engine,
-      tetrad = rlang::exec(my_boss_variant_tetrad_runner, score, !!!args)
-    )
-    runner
-  }
-
-  method <- new_disco_method(
-    builder = builder,
-    name = "my_boss_variant",
+  make_method(
+    method_name = "my_boss_variant",
     engine = engine,
-    graph_class = "PDAG"
+    engine_fns = list(
+      tetrad = function(...) {
+        make_runner(engine = "tetrad", alg = "my_boss_variant", ...)
+      }
+    ),
+    score = score,
+    graph_class = "PDAG",
+    ...
   )
-  method
 }
 
-## ----my_boss_variant runner---------------------------------------------------
-my_boss_variant_tetrad_runner <- function(score, ...) {
-  search <- TetradSearch$new()
-  args <- list(...)
-  args_to_pass <- distribute_engine_args(
-    search = search,
-    args = args,
-    engine = "tetrad",
-    alg = "my_boss_variant"
-  )
 
-  if (length(args_to_pass$score_args) > 0) {
-    rlang::exec(search$set_score, score, !!!args_to_pass$score_args)
-  } else {
-    search$set_score(score)
-  }
-
-  if (length(args_to_pass$alg_args) > 0) {
-    rlang::exec(search$set_alg, "my_boss_variant", !!!args_to_pass$alg_args)
-  } else {
-    search$set_alg("my_boss_variant")
-  }
-
-  runner <- list(
-    set_knowledge = function(knowledge) {
-      search$set_knowledge(knowledge)
-    },
-    run = function(data) {
-      search$run_search(data)
-    }
-  )
-  runner
-}
-
-## ----my_boss_variant example, eval = FALSE------------------------------------
+## -----------------------------------------------------------------------------
+#| label: my_boss_variant example
+#| eval: false
 # # Ensure Tetrad is installed and Java is working before running the algorithm
 # if (verify_tetrad()$installed && verify_tetrad()$java_ok) {
-#   my_boss_variant_tetrad <- my_boss_variant(engine = "tetrad", score = "sem_bic")
+#   my_boss_variant_tetrad <- my_boss_variant(
+#     engine = "tetrad",
+#     score = "sem_bic"
+#   )
 #   my_boss_variant_tetrad_result <- disco(tpc_example, my_boss_variant_tetrad)
 #   plot(my_boss_variant_tetrad_result)
 # }
 
-## ----my_boss_variant_tetrad algorithm plot code, echo=FALSE, eval = FALSE-----
+## -----------------------------------------------------------------------------
+#| label: my_boss_variant_tetrad algorithm plot code
+#| echo: false
+#| eval: false
 # # Code to generate the plot image on pkgdown and CRAN.
 # 
 # # For pkgdown (comment out to avoid CRAN NOTE about unstated dependency used) use the function fig_settings
@@ -182,25 +122,29 @@ my_boss_variant_tetrad_runner <- function(score, ...) {
 # # Hardcoded since knitr::opts_current$get() is different when running in console.
 # ragg::agg_png(
 #   filename = "custom-boss-variant-cran.png",
-#   width  = 3,
+#   width = 3,
 #   height = 3,
-#   units  = "in",
-#   res    = 92 * 1
+#   units = "in",
+#   res = 92 * 1
 # )
 # my_boss_variant_tetrad <- my_boss_variant(engine = "tetrad", score = "sem_bic")
 # my_boss_variant_tetrad_result <- disco(tpc_example, my_boss_variant_tetrad)
 # plot(my_boss_variant_tetrad_result)
 # dev.off()
 
-## ----ges-ebic-tetrad-include, echo=FALSE--------------------------------------
+## -----------------------------------------------------------------------------
+#| label: ges-ebic-tetrad-include
+#| echo: false
 img_file <- if (identical(Sys.getenv("IN_PKGDOWN"), "true")) {
-  "ges-ebic-tetrad-pkgdown.png"
+  "custom-boss-variant-pkgdown.png"
 } else {
-  "ges-ebic-tetrad-cran.png"
+  "custom-boss-variant-cran.png"
 }
 
 knitr::include_graphics(img_file)
 
-## ----cleanup------------------------------------------------------------------
+
+## -----------------------------------------------------------------------------
+#| label: cleanup
 reset_tetrad_alg_registry()
 
