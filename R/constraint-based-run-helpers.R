@@ -19,7 +19,6 @@ constraint_based_prepare_inputs <- function(
   na_method = "none",
   test = reg_test,
   suff_stat = NULL,
-  directed_as_undirected = FALSE,
   function_name
 ) {
   # check required packages
@@ -59,10 +58,11 @@ constraint_based_prepare_inputs <- function(
             call. = FALSE
           )
         }
+      } else if (na_method == "twd") {
+        # Handle in tests
       } else {
         stop(
-          "Inputted data contains NA but selected CI test does not support missing data. ",
-          "Use na_method = 'cc' or choose an appropriate test.",
+          "Inputted data contains NA but selected CI test does not support missing data.",
           call. = FALSE
         )
       }

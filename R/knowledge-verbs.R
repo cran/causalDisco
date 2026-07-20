@@ -12,8 +12,8 @@
 #'
 #' @example inst/roxygen-examples/knowledge_verbs-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #'
 #' @export
 add_vars <- function(kn, vars) {
@@ -61,8 +61,8 @@ add_vars <- function(kn, vars) {
 #'
 #' @example inst/roxygen-examples/knowledge_verbs-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #'
 #' @export
 add_tier <- function(kn, tier, before = NULL, after = NULL) {
@@ -191,15 +191,14 @@ add_tier <- function(kn, tier, before = NULL, after = NULL) {
 #'
 #' @example inst/roxygen-examples/knowledge_verbs-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #' @importFrom rlang .data
 #' @export
 add_to_tier <- function(kn, ...) {
   .check_if_pkgs_are_installed(
     pkgs = c(
       "dplyr",
-      "glue",
       "rlang"
     ),
     function_name = "add_to_tier"
@@ -235,9 +234,9 @@ add_to_tier <- function(kn, ...) {
     # resolve variables on the RHS
     vars <- .formula_vars(kn, rhs_expr)
     if (!length(vars)) {
-      stop(glue::glue(
-        "Specification `{deparse(rhs_expr)}` matched no variables."
-      ))
+      cli::cli_abort(
+        "Specification `{paste(deparse(rhs_expr), collapse = '')}` matched no variables."
+      )
     }
 
     # detect variables already assigned to a different tier
@@ -294,8 +293,8 @@ add_to_tier <- function(kn, ...) {
 #'
 #' @example inst/roxygen-examples/knowledge_verbs-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #'
 #' @export
 forbid_edge <- function(kn, ...) {
@@ -329,8 +328,8 @@ forbid_edge <- function(kn, ...) {
 #'
 #' @example inst/roxygen-examples/knowledge_verbs-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #'
 #' @export
 require_edge <- function(kn, ...) {
@@ -366,8 +365,8 @@ require_edge <- function(kn, ...) {
 #'
 #' @example inst/roxygen-examples/knowledge_verbs-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #'
 #' @export
 add_exogenous <- function(kn, vars) {
@@ -392,8 +391,8 @@ add_exo <- add_exogenous
 #'
 #' @example inst/roxygen-examples/unfreeze-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #'
 #' @export
 unfreeze <- function(kn) {
@@ -414,8 +413,8 @@ unfreeze <- function(kn) {
 #'
 #' @example inst/roxygen-examples/get_tiers-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #'
 #' @export
 get_tiers <- function(kn) {
@@ -437,8 +436,8 @@ get_tiers <- function(kn) {
 #'
 #' @example inst/roxygen-examples/remove_from_knowledge-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #' @importFrom rlang .data
 #' @export
 remove_vars <- function(kn, ...) {
@@ -490,8 +489,8 @@ remove_vars <- function(kn, ...) {
 #'
 #' @example inst/roxygen-examples/remove_from_knowledge-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #'
 #' @export
 remove_edge <- function(kn, from, to) {
@@ -540,8 +539,8 @@ remove_edge <- function(kn, from, to) {
 #'
 #' @example inst/roxygen-examples/remove_from_knowledge-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #' @importFrom rlang .data
 #' @export
 remove_tiers <- function(kn, ...) {
@@ -591,8 +590,8 @@ remove_tiers <- function(kn, ...) {
 #'
 #' @example inst/roxygen-examples/forbid_tier_violations-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #' @importFrom rlang .data
 #' @keywords internal
 #' @noRd
@@ -663,8 +662,8 @@ forbid_tier_violations <- function(kn) {
 #' print(kn_converted)
 #' plot(kn_converted)
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #' @export
 convert_tiers_to_forbidden <- function(kn) {
   kn <- forbid_tier_violations(kn)
@@ -712,8 +711,8 @@ convert_tiers_to_forbidden <- function(kn) {
 #'
 #' @example inst/roxygen-examples/seq_tiers-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #'
 #' @export
 seq_tiers <- function(tiers, vars) {

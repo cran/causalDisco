@@ -37,7 +37,7 @@ TetradSearch <- R6Class(
     #'   \itemize{
     #'      \item \code{"ebic"} - Extended BIC score.
     #'      \item \code{"gic"} - Generalized Information Criterion (GIC) score.
-    #'      \item \code{"poisson_prior"} - Poisson prior score.'
+    #'      \item \code{"poisson_prior"} - Poisson prior score.
     #'      \item \code{"rank_bic"} - Rank-based BIC score.
     #'      \item \code{"sem_bic"} - SEM BIC score.
     #'      \item \code{"zhang_shen_bound"} - Zhang and Shen bound score.
@@ -257,7 +257,7 @@ TetradSearch <- R6Class(
     #'         independence test,
     #'         \item \code{discretize = TRUE} - If TRUE for the conditional
     #'         Gaussian likelihood, when scoring X --> D where X is continuous
-    #'         and D discrete, one should to simply discretize X for just
+    #'         and D discrete, one should simply discretize X for just
     #'         those cases.
     #'         If FALSE, the integration will be exact,
     #'         \item \code{num_categories_to_discretize = 3} - In case the exact
@@ -517,7 +517,7 @@ TetradSearch <- R6Class(
     #'        yields sparser graphs,
     #'        \item \code{discretize = TRUE} - If TRUE for the conditional
     #'         Gaussian likelihood, when scoring X --> D where X is continuous and
-    #'         D discrete, one should to simply discretize X for just those cases.
+    #'         D discrete, one should simply discretize X for just those cases.
     #'         If FALSE, the integration will be exact,
     #'        \item \code{num_categories_to_discretize = 3} -  In case the exact
     #'         algorithm is not used for discrete children and continuous parents
@@ -718,11 +718,10 @@ TetradSearch <- R6Class(
     #'    }
     #'  \item \code{"boss_fci"} - BOSS-FCI algorithm.
     #'   \itemize{
-    #'    \item \code{depth = -1} - Maximum size of conditioning set,
+    #'    \item \code{depth = -1} - Maximum size of conditioning set.
     #'     Set to -1 for unlimited,
     #'    \item \code{max_disc_path_length = -1} - Maximum length for any
-    #'     discriminating path,
-    #'     Set to -1 for unlimited,
+    #'     discriminating path. Set to -1 for unlimited,
     #'    \item \code{use_bes = TRUE} - If TRUE, the algorithm uses the
     #'     backward equivalence search from the GES algorithm as one of its
     #'     steps,
@@ -817,12 +816,13 @@ TetradSearch <- R6Class(
     #    }
     #'   \item \code{"fci"} - FCI algorithm.
     #'    \itemize{
-    #'      \item \code{depth = -1} - Maximum size of conditioning set,
+    #'      \item \code{depth = -1} - Maximum size of conditioning set.
+    #'        Set to -1 for unlimited,
     #'      \item \code{stable_fas = TRUE} - If TRUE, the "stable" version of
     #'       the PC adjacency search is used, which for k > 0 fixes the graph
     #'       for depth k + 1 to that of the previous depth k.
     #'      \item \code{max_disc_path_length = -1} - Maximum length for any
-    #'       discriminating path,
+    #'       discriminating path. Set to -1 for unlimited,
     #'      \item \code{complete_rule_set_used = TRUE} - FALSE if the (simpler)
     #'       final orientation rules set due to P. Spirtes, guaranteeing arrow
     #'       completeness, should be used; TRUE if the (fuller) set due to
@@ -888,7 +888,7 @@ TetradSearch <- R6Class(
     #'      \item \code{max_degree = -1} - Maximum degree of any node in the
     #'       graph. Set to -1 for unlimited,
     #'      \item \code{max_disc_path_length = -1} - Maximum length for any
-    #'       discriminating path,
+    #'       discriminating path. Set to -1 for unlimited,
     #'      \item \code{complete_rule_set_used = TRUE} - FALSE if the (simpler)
     #'       final orientation rules set due to P. Spirtes, guaranteeing arrow
     #'       completeness, should be used; TRUE if the (fuller) set due to
@@ -922,12 +922,13 @@ TetradSearch <- R6Class(
     #'    }
     #'   \item \code{"grasp_fci"} - GRaSP-FCI algorithm. Combines GRaSP and FCI.
     #'    \itemize{
-    #'      \item \code{depth = -1} - Maximum size of conditioning set,
+    #'      \item \code{depth = -1} - Maximum size of conditioning set.
+    #'        Set to -1 for unlimited,
     #'      \item \code{stable_fas = TRUE} - If TRUE, the "stable" version of
     #'       the PC adjacency search is used, which for k > 0 fixes the graph
     #'       for depth k + 1 to that of the previous depth k.
     #'      \item \code{max_disc_path_length = -1} - Maximum length for any
-    #'       discriminating path,
+    #'       discriminating path. Set to -1 for unlimited,
     #'      \item \code{complete_rule_set_used = TRUE} - FALSE if the (simpler)
     #'       final orientation rules set due to P. Spirtes, guaranteeing arrow
     #'       completeness, should be used; TRUE if the (fuller) set due to
@@ -985,7 +986,8 @@ TetradSearch <- R6Class(
     #'      [pcalg::pc()]. \code{2} means that all collider conflicts using bidirected edges
     #'      should be prioritized, while \code{3} means that existing colliders should be prioritized,
     #'      ignoring subsequent conflicting information.
-    #'      \item \code{depth = -1} - Maximum size of conditioning set,
+    #'      \item \code{depth = -1} - Maximum size of conditioning set.
+    #'        Set to -1 for unlimited,
     #'      \item \code{stable_fas = TRUE} - If TRUE, the "stable" version of
     #'       the PC adjacency search is used, which for k > 0 fixes the graph
     #'       for depth k + 1 to that of the previous depth k.
@@ -1026,25 +1028,25 @@ TetradSearch <- R6Class(
     # #'    }
     #'   \item \code{"rfci"} - Restricted FCI algorithm
     #'    \itemize{
-    #'      \item \code{depth = -1} - Maximum size of conditioning set,
+    #'      \item \code{depth = -1} - Maximum size of conditioning set. Set
+    #'        to -1 for unlimited,
     #'      \item \code{stable_fas = TRUE} - If TRUE, the "stable" version of
     #'       the PC adjacency search is used, which for k > 0 fixes the graph
     #'       for depth k + 1 to that of the previous depth k.
     #'      \item \code{max_disc_path_length = -1} - Maximum length for any
-    #'       discriminating path,
+    #'       discriminating path. Set to -1 for unlimited,
     #'      \item \code{complete_rule_set_used = TRUE} - FALSE if the (simpler)
     #'       final orientation rules set due to P. Spirtes, guaranteeing arrow
     #'       completeness, should be used; TRUE if the (fuller) set due to
     #'       J. Zhang, should be used guaranteeing additional tail completeness.
-    #'      \item \code{guarantee_pag = FALSE} - Ensure the output is a legal
-    #'       PAG (where feasible).
     #'    }
     #    \item \code{"sp"} - Sparsest Permutation algorithm. No parameters.
     #'   \item \code{"sp_fci"} - Sparsest Permutation using FCI
     #'    \itemize{
-    #'      \item \code{depth = -1} - Maximum size of conditioning set,
+    #'      \item \code{depth = -1} - Maximum size of conditioning set. Set
+    #'        to -1 for unlimited,
     #'      \item \code{max_disc_path_length = -1} - Maximum length for any
-    #'       discriminating path,
+    #'       discriminating path. Set to -1 for unlimited,
     #'      \item \code{complete_rule_set_used = TRUE} - FALSE if the (simpler)
     #'       final orientation rules set due to P. Spirtes, guaranteeing arrow
     #'       completeness, should be used; TRUE if the (fuller) set due to

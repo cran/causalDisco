@@ -42,7 +42,7 @@ s_tpc <- CausalDiscoSearch$new()
 s_tpc$set_params(list(verbose = FALSE))
 s_tpc$set_test("fisher_z", alpha = 0.2)
 s_tpc$set_alg("tpc")
-s_tpc$set_knowledge(kn, directed_as_undirected = TRUE)
+s_tpc$set_knowledge(kn)
 s_tpc$set_data(tpc_example)
 res_tpc <- s_tpc$run_search()
 print(res_tpc)
@@ -60,6 +60,24 @@ s_tges$set_data(tpc_example, set_suff_stat = FALSE) # suff stat not used for TGE
 s_tges$set_knowledge(kn)
 res_tges <- s_tges$run_search()
 print(res_tges)
+
+# --- Custom (user-defined) algorithm: constraint-based -----------------------
+my_alg <- function(data, knowledge, suff_stat) {
+  tpc_run(
+    data = data,
+    knowledge = knowledge,
+    suff_stat = suff_stat,
+    test = reg_test
+  )
+}
+
+s_custom <- CausalDiscoSearch$new()
+s_custom$set_test("reg")
+s_custom$set_knowledge(kn)
+s_custom$set_alg(my_alg) # type = "constraint" by default
+s_custom$set_data(tpc_example)
+res_custom <- s_custom$run_search()
+print(res_custom)
 
 # --- Intentional error demonstrations ----------------------------------------
 
@@ -84,12 +102,12 @@ try(CausalDiscoSearch$new()$set_knowledge(list(not = "Knowledge")))
 \code{\link[=knowledge]{knowledge()}}.
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{data}}{A \code{data.frame} holding the data set currently attached to the
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{data}}{A \code{data.frame} holding the data set currently attached to the
 search object. Can be set with \code{set_data()}.}
 
-\item{\code{score}}{A function that will be used to build the score,
+    \item{\code{score}}{A function that will be used to build the score,
 when data is set. Can be set with \code{$set_score()}. Recognized values
 are:
 \itemize{
@@ -99,7 +117,7 @@ See \link{TemporalBIC}.
 See \link{TemporalBDeu}.
 }}
 
-\item{\code{test}}{A function that will be used to test independence.
+    \item{\code{test}}{A function that will be used to test independence.
 Can be set with \code{$set_test()}. Recognized values are:
 \itemize{
 \item \code{"fisher_z"} - Fisher Z test for Gaussian data.
@@ -107,7 +125,7 @@ See \code{\link[=cor_test]{cor_test()}}.
 \item \code{"fisher_z_twd"} - Fisher Z test for Gaussian data with test-wise deletion.
 See \code{\link[micd:gaussCItwd]{micd::gaussCItwd()}}.
 \item \code{"fisher_z_mi"} - Fisher Z test for Gaussian data with multiple imputation.
-See \code{\link[micd:gaussMItest]{micd::gaussCItestMI()}}.
+See \code{\link[micd:gaussCItestMI]{micd::gaussCItestMI()}}.
 
 \item \code{"reg"} - Regression test for discrete or binary data.
 See \code{\link[=reg_test]{reg_test()}}.
@@ -128,7 +146,7 @@ with multiple imputation.
 See \code{\link[micd:mixMItest]{micd::mixMItest()}}.
 }}
 
-\item{\code{alg}}{A function that will be used to run the search algorithm.
+    \item{\code{alg}}{A function that will be used to run the search algorithm.
 Can be set with \code{$set_alg()}. Recognized values are:
 \itemize{
 \item \code{"tfci"} - TFCI algorithm.
@@ -137,109 +155,118 @@ See \code{\link[=tfci]{tfci()}}.
 See \code{\link[=tges]{tges()}}.
 \item \code{"tpc"}  - TPC algorithm.
 See \code{\link[=tpc]{tpc()}}.
-}}
+}
+Can also be a user-defined function; see \code{$set_alg()} for details.}
 
-\item{\code{params}}{A list of parameters for the test and algorithm.
+    \item{\code{params}}{A list of parameters for the test and algorithm.
 Can be set with \code{$set_params()}.
 TODO: not secure yet in terms of distributing arguments.
 Use with caution.}
 
-\item{\code{suff_stat}}{Sufficient statistic. The format and contents of the
+    \item{\code{suff_stat}}{Sufficient statistic. The format and contents of the
 sufficient statistic depends on which test is being used.}
 
-\item{\code{knowledge}}{A \code{Knowledge} object holding background knowledge.}
-}
-\if{html}{\out{</div>}}
+    \item{\code{knowledge}}{A \code{Knowledge} object holding background knowledge.}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-CausalDiscoSearch-new}{\code{CausalDiscoSearch$new()}}
-\item \href{#method-CausalDiscoSearch-set_params}{\code{CausalDiscoSearch$set_params()}}
-\item \href{#method-CausalDiscoSearch-set_data}{\code{CausalDiscoSearch$set_data()}}
-\item \href{#method-CausalDiscoSearch-set_suff_stat}{\code{CausalDiscoSearch$set_suff_stat()}}
-\item \href{#method-CausalDiscoSearch-set_test}{\code{CausalDiscoSearch$set_test()}}
-\item \href{#method-CausalDiscoSearch-set_score}{\code{CausalDiscoSearch$set_score()}}
-\item \href{#method-CausalDiscoSearch-set_alg}{\code{CausalDiscoSearch$set_alg()}}
-\item \href{#method-CausalDiscoSearch-set_knowledge}{\code{CausalDiscoSearch$set_knowledge()}}
-\item \href{#method-CausalDiscoSearch-run_search}{\code{CausalDiscoSearch$run_search()}}
-\item \href{#method-CausalDiscoSearch-clone}{\code{CausalDiscoSearch$clone()}}
-}
+  \itemize{
+    \item \href{#method-CausalDiscoSearch-initialize}{\code{CausalDiscoSearch$new()}}
+    \item \href{#method-CausalDiscoSearch-set_params}{\code{CausalDiscoSearch$set_params()}}
+    \item \href{#method-CausalDiscoSearch-set_data}{\code{CausalDiscoSearch$set_data()}}
+    \item \href{#method-CausalDiscoSearch-set_suff_stat}{\code{CausalDiscoSearch$set_suff_stat()}}
+    \item \href{#method-CausalDiscoSearch-set_test}{\code{CausalDiscoSearch$set_test()}}
+    \item \href{#method-CausalDiscoSearch-set_score}{\code{CausalDiscoSearch$set_score()}}
+    \item \href{#method-CausalDiscoSearch-set_alg}{\code{CausalDiscoSearch$set_alg()}}
+    \item \href{#method-CausalDiscoSearch-set_knowledge}{\code{CausalDiscoSearch$set_knowledge()}}
+    \item \href{#method-CausalDiscoSearch-run_search}{\code{CausalDiscoSearch$run_search()}}
+    \item \href{#method-CausalDiscoSearch-clone}{\code{CausalDiscoSearch$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CausalDiscoSearch-new"></a>}}
-\if{latex}{\out{\hypertarget{method-CausalDiscoSearch-new}{}}}
-\subsection{Method \code{new()}}{
-Constructor for the \code{CausalDiscoSearch} class.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CausalDiscoSearch$new()}\if{html}{\out{</div>}}
+\if{html}{\out{<a id="method-CausalDiscoSearch-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-CausalDiscoSearch-initialize}{}}}
+\subsection{\code{CausalDiscoSearch$new()}}{
+  Constructor for the \code{CausalDiscoSearch} class.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CausalDiscoSearch$new()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CausalDiscoSearch-set_params"></a>}}
 \if{latex}{\out{\hypertarget{method-CausalDiscoSearch-set_params}{}}}
-\subsection{Method \code{set_params()}}{
-Sets the parameters for the test and algorithm.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CausalDiscoSearch$set_params(params)}\if{html}{\out{</div>}}
+\subsection{\code{CausalDiscoSearch$set_params()}}{
+  Sets the parameters for the test and algorithm.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CausalDiscoSearch$set_params(params)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{params}}{A list of parameters to set.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{params}}{A list of parameters to set.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CausalDiscoSearch-set_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CausalDiscoSearch-set_data}{}}}
-\subsection{Method \code{set_data()}}{
-Sets the data for the search algorithm.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CausalDiscoSearch$set_data(data, set_suff_stat = TRUE)}\if{html}{\out{</div>}}
+\subsection{\code{CausalDiscoSearch$set_data()}}{
+  Sets the data for the search algorithm.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CausalDiscoSearch$set_data(data, set_suff_stat = TRUE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{data}}{A \code{data.frame} or a \code{matrix} containing the data.}
+      \item{\code{set_suff_stat}}{Logical; whether to set the sufficient statistic.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{A \code{data.frame} or a \code{matrix} containing the data.}
-
-\item{\code{set_suff_stat}}{Logical; whether to set the sufficient statistic.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CausalDiscoSearch-set_suff_stat"></a>}}
 \if{latex}{\out{\hypertarget{method-CausalDiscoSearch-set_suff_stat}{}}}
-\subsection{Method \code{set_suff_stat()}}{
-Sets the sufficient statistic for the data.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CausalDiscoSearch$set_suff_stat()}\if{html}{\out{</div>}}
+\subsection{\code{CausalDiscoSearch$set_suff_stat()}}{
+  Sets the sufficient statistic for the data.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CausalDiscoSearch$set_suff_stat()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CausalDiscoSearch-set_test"></a>}}
 \if{latex}{\out{\hypertarget{method-CausalDiscoSearch-set_test}{}}}
-\subsection{Method \code{set_test()}}{
-Sets the test for the search algorithm.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CausalDiscoSearch$set_test(
+\subsection{\code{CausalDiscoSearch$set_test()}}{
+  Sets the test for the search algorithm.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CausalDiscoSearch$set_test(
   method,
   alpha = 0.05,
   suff_stat_fun = NULL,
   args = NULL
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{method}}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{method}}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 
 A string specifying the type of test to use.
 
@@ -254,112 +281,146 @@ signature \verb{function(x, y, conditioning_set, suff_stat, args)}, and the \cod
 test function.
 
 EXPERIMENTAL: user-defined tests syntax are subject to change.}
-
-\item{\code{alpha}}{Significance level for the test.}
-
-\item{\code{suff_stat_fun}}{A function that takes the data as input and returns a sufficient statistic for the test.
+      \item{\code{alpha}}{Significance level for the test.}
+      \item{\code{suff_stat_fun}}{A function that takes the data as input and returns a sufficient statistic for the test.
 Only needed if \code{method} is a user-defined function.}
-
-\item{\code{args}}{A list of additional arguments to pass to the test.
+      \item{\code{args}}{A list of additional arguments to pass to the test.
 Only needed if \code{method} is a user-defined function with an \code{args} parameter in its signature.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CausalDiscoSearch-set_score"></a>}}
 \if{latex}{\out{\hypertarget{method-CausalDiscoSearch-set_score}{}}}
-\subsection{Method \code{set_score()}}{
-Sets the score for the search algorithm.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CausalDiscoSearch$set_score(method, params = list())}\if{html}{\out{</div>}}
+\subsection{\code{CausalDiscoSearch$set_score()}}{
+  Sets the score for the search algorithm.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CausalDiscoSearch$set_score(method, params = list())}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{method}}{A string specifying the type of score to use.}
+      \item{\code{params}}{A list of parameters to pass to the score function.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{method}}{A string specifying the type of score to use.}
-
-\item{\code{params}}{A list of parameters to pass to the score function.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CausalDiscoSearch-set_alg"></a>}}
 \if{latex}{\out{\hypertarget{method-CausalDiscoSearch-set_alg}{}}}
-\subsection{Method \code{set_alg()}}{
-Sets the algorithm for the search.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CausalDiscoSearch$set_alg(method)}\if{html}{\out{</div>}}
+\subsection{\code{CausalDiscoSearch$set_alg()}}{
+  Sets the algorithm for the search.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CausalDiscoSearch$set_alg(method, type = c("constraint", "score"), args = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{method}}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
+A string specifying the type of algorithm to use.
+
+Can also be a user-defined function implementing a full search
+algorithm. Its required signature depends on \code{type}:
+\itemize{
+\item \code{type = "constraint"} (default) - signature
+\code{function(data, knowledge, suff_stat, ...)}, analogous to
+\code{\link[=tpc_run]{tpc_run()}} and \code{\link[=tfci_run]{tfci_run()}}.
+\item \code{type = "score"} - signature \code{function(score, ...)},
+analogous to \code{\link[=tges_run]{tges_run()}}.
+}
+Optionally, the function's signature can also include an \code{args}
+parameter, which is a list of additional arguments to pass to the
+algorithm function. If \code{args} is provided, the function should have
+the signature \code{function(data, knowledge, suff_stat, args)} (or
+\code{function(score, args)} for \code{type = "score"}), and the
+\code{args} parameter will be passed to the algorithm function.
+
+EXPERIMENTAL: user-defined algorithm syntax is subject to change.}
+      \item{\code{type}}{Only used if \code{method} is a user-defined function.
+One of \code{"constraint"} (default) or \code{"score"}, specifying
+whether the algorithm is constraint-based (called with
+\code{data}/\code{knowledge}/\code{suff_stat}) or score-based (called
+with \code{score}).}
+      \item{\code{args}}{A list of additional arguments to pass to the algorithm.
+Only needed if \code{method} is a user-defined function with an
+\code{args} parameter in its signature.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{method}}{A string specifying the type of algorithm to use.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CausalDiscoSearch-set_knowledge"></a>}}
 \if{latex}{\out{\hypertarget{method-CausalDiscoSearch-set_knowledge}{}}}
-\subsection{Method \code{set_knowledge()}}{
-Sets the background knowledge for the search with a \code{Knowledge} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CausalDiscoSearch$set_knowledge(kn, directed_as_undirected = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{CausalDiscoSearch$set_knowledge()}}{
+  Sets the background knowledge for the search with a \code{Knowledge} object.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CausalDiscoSearch$set_knowledge(
+  kn,
+  directed_as_undirected = lifecycle::deprecated()
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{kn}}{A \code{Knowledge} object.}
+      \item{\code{directed_as_undirected}}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} This
+argument no longer has any effect and will be removed in a future
+release. Directed forbidden edges are now resolved using tier
+information, or must be specified in both directions.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{kn}}{A \code{Knowledge} object.}
-
-\item{\code{directed_as_undirected}}{Logical; whether to treat directed edges in
-the knowledge as undirected. Default is \code{FALSE}. This is due to the
-nature of how \pkg{pcalg} handles background knowledge when using
-\code{\link[pcalg:skeleton]{pcalg::skeleton()}} under the hood in
-\code{\link[=tpc]{tpc()}} and
-\code{\link[=tfci]{tfci()}}.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CausalDiscoSearch-run_search"></a>}}
 \if{latex}{\out{\hypertarget{method-CausalDiscoSearch-run_search}{}}}
-\subsection{Method \code{run_search()}}{
-Runs the search algorithm on the data.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CausalDiscoSearch$run_search(data = NULL, set_suff_stat = TRUE)}\if{html}{\out{</div>}}
+\subsection{\code{CausalDiscoSearch$run_search()}}{
+  Runs the search algorithm on the data.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CausalDiscoSearch$run_search(data = NULL, set_suff_stat = TRUE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{data}}{A \code{data.frame} or a \code{matrix} containing the data.}
+      \item{\code{set_suff_stat}}{Logical; whether to set the sufficient statistic}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{A \code{data.frame} or a \code{matrix} containing the data.}
-
-\item{\code{set_suff_stat}}{Logical; whether to set the sufficient statistic}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CausalDiscoSearch-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-CausalDiscoSearch-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CausalDiscoSearch$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{CausalDiscoSearch$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CausalDiscoSearch$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

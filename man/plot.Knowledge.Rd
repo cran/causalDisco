@@ -24,8 +24,8 @@ Visualize a \code{Knowledge} object as a directed graph using \code{\link[caugi:
 \details{
 \itemize{
 \item \strong{Required edges} are drawn in \strong{blue} by default (can be changed via \code{required_col}).
-\item \strong{Forbidden edges} are drawn in \strong{red} by default (can be changed via \code{forbidden_col}). If A to B and B to
-a is forbidden, a edge \verb{<->} is drawn.
+\item \strong{Forbidden edges} are drawn in \strong{red} by default (can be changed via \code{forbidden_col}). If A to B
+and B to A is forbidden, an edge \verb{<->} is drawn.
 \item If tiered knowledge is provided, nodes are arranged according to their tiers.
 \item Users can override other edge styling (e.g., line width, arrow size) via the
 \code{edge_style} argument. To override the color of a specific edge, use
@@ -95,8 +95,8 @@ kn <- knowledge(
     youth ~ starts_with("youth"),
     old ~ starts_with("old")
   ),
-  child_x1 \%-->\% c(child_x2, youth_x4), # required edges
-  youth_x4 \%!-->\% c(youth_x3, oldage_x5)  # forbidden edges
+  child_x1 \%-->\% child_x2 + youth_x4, # required edges
+  youth_x4 \%!-->\% youth_x3 + oldage_x5  # forbidden edges
 )
 
 # Edge from child_x1 to child_x2 will be orange, but edge from child_x1 to youth_x4
@@ -122,7 +122,7 @@ plot(
 # Define a `Knowledge` object without tiers
 kn_untiered <- knowledge(
   tpc_example,
-  child_x1 \%-->\% c(child_x2, youth_x3),
+  child_x1 \%-->\% child_x2 + youth_x3,
   youth_x4 \%!-->\% oldage_x5
 )
 # Plot with default layout
@@ -137,3 +137,9 @@ custom_layout <- data.frame(
 plot(kn_untiered, layout = custom_layout)
 
 }
+\seealso{
+Other plot:
+\code{\link{plot}},
+\code{\link[=plot.Disco]{plot.Disco()}}
+}
+\concept{plot}

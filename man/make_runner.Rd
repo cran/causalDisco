@@ -4,19 +4,12 @@
 \alias{make_runner}
 \title{Create a Custom Runner for a Causal Discovery Algorithm}
 \usage{
-make_runner(
-  engine,
-  alg,
-  test = NULL,
-  alpha = NULL,
-  score = NULL,
-  ...,
-  directed_as_undirected_knowledge = FALSE
-)
+make_runner(engine, alg, test = NULL, alpha = NULL, score = NULL, ...)
 }
 \arguments{
 \item{engine}{Character. The engine to use. Options include \code{"causalDisco"},
-\code{"pcalg"}, \code{"bnlearn"}, \code{"tetrad"}.}
+\code{"pcalg"}, \code{"bnlearn"}, \code{"tetrad"}, or the name of any engine added via
+\code{\link[=register_engine]{register_engine()}}.}
 
 \item{alg}{Character. The algorithm name.}
 
@@ -27,8 +20,6 @@ make_runner(
 \item{score}{Optional. A scoring function for score-based methods.}
 
 \item{...}{Additional arguments passed to the engine-specific runner.}
-
-\item{directed_as_undirected_knowledge}{Logical. Used internally for \pkg{pcalg}.}
 }
 \value{
 An object representing a configured runner for the chosen engine.
@@ -41,13 +32,17 @@ Constructs a runner function for a specific causal discovery
 engine and algorithm. This allows users to support new algorithms.
 }
 \seealso{
-Other Extending causalDisco: 
-\code{\link{distribute_engine_args}()},
-\code{\link{list_registered_tetrad_algorithms}()},
-\code{\link{make_method}()},
-\code{\link{new_disco_method}()},
-\code{\link{register_tetrad_algorithm}()},
-\code{\link{reset_tetrad_alg_registry}()}
+Other Extending causalDisco:
+\code{\link[=as_disco]{as_disco()}},
+\code{\link[=distribute_engine_args]{distribute_engine_args()}},
+\code{\link[=list_registered_engines]{list_registered_engines()}},
+\code{\link[=list_registered_tetrad_algorithms]{list_registered_tetrad_algorithms()}},
+\code{\link[=make_method]{make_method()}},
+\code{\link[=new_disco_method]{new_disco_method()}},
+\code{\link[=register_engine]{register_engine()}},
+\code{\link[=register_tetrad_algorithm]{register_tetrad_algorithm()}},
+\code{\link[=reset_engine_registry]{reset_engine_registry()}},
+\code{\link[=reset_tetrad_alg_registry]{reset_tetrad_alg_registry()}}
 }
 \concept{Extending causalDisco}
 \concept{extending_causalDisco}

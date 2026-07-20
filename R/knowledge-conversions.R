@@ -15,8 +15,8 @@
 #'
 #' @example inst/roxygen-examples/as_tetrad_knowledge-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #'
 #' @export
 as_tetrad_knowledge <- function(kn) {
@@ -65,42 +65,53 @@ as_tetrad_knowledge <- function(kn) {
 #' Convert Knowledge to pcalg Knowledge
 #'
 #' \pkg{pcalg} only supports _undirected_ (symmetric) background constraints:
-#' * **fixed_gaps**  - forbidding edges (zeros enforced)
-#' * **fixed_edges** - requiring edges (ones enforced)
+#' * **fixed_gaps** - forbidding edges (zeros enforced)
 #'
-#' This function takes a `Knowledge` object (with only forbidden/required
-#' edges, no tiers) and returns the two logical matrices in the exact
-#' variable order you supply.
+#' This function takes a `Knowledge` object (with only forbidden edges, no
+#' tiers) and returns the logical constraint matrix in the exact variable
+#' order you supply.
+#'
+#' Required edges in a `Knowledge` object are directed statements. \pkg{pcalg}
+#' constraints are adjacency-level only, so a required edge cannot be honored;
+#' any required edges are dropped with a warning.
 #'
 #' @param kn A `Knowledge` object.  Must have no tier information.
 #' @param labels Character vector of all variable names, in the exact order
 #'   of your data columns.  Every variable referenced by an edge in \code{kn}
 #'   must appear here.
-#' @param directed_as_undirected Logical (default \code{FALSE}).  If
-#'   \code{FALSE}, we require that every edge in \code{kn} has its
-#'   mirror-image present as well, and will error if any are missing.  If
-#'   \code{TRUE}, we automatically mirror every directed edge into
-#'   an undirected constraint.
+#' @param directed_as_undirected `r lifecycle::badge("deprecated")` This
+#'   argument no longer has any effect and will be removed in a future
+#'   release. Specify directed edges in both directions in [knowledge()]
+#'   instead.
 #'
-#' @returns A list with two elements, each an \code{n × n} logical matrix
-#' corresponding to \pkg{pcalg} `fixed_gaps` and `fixed_edges` arguments.
+#' @returns A list with one element, `fixed_gaps`: an \code{n × n} logical
+#' matrix corresponding to the \pkg{pcalg} `fixedGaps` argument.
 #'
 #' @section Errors:
 #' * If the `Knowledge` object contains tiered knowledge.
-#' * If \code{directed_as_undirected = FALSE} and any edge lacks its
-#'   symmetrical counterpart. This can only hold for forbidden edges.
+#' * If any forbidden edge lacks its symmetrical counterpart.
 #'
 #' @example inst/roxygen-examples/as_pcalg_constraints-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #' @importFrom rlang .data
 #' @export
 as_pcalg_constraints <- function(
   kn,
   labels = kn$vars$var,
-  directed_as_undirected = FALSE
+  directed_as_undirected = lifecycle::deprecated()
 ) {
+  if (lifecycle::is_present(directed_as_undirected)) {
+    lifecycle::deprecate_warn(
+      when = "1.2.0",
+      what = "as_pcalg_constraints(directed_as_undirected)",
+      details = paste0(
+        "The argument is ignored. Specify directed edges in both ",
+        "directions in knowledge() instead."
+      )
+    )
+  }
   .check_if_pkgs_are_installed(
     pkgs = c(
       "dplyr",
@@ -159,22 +170,30 @@ as_pcalg_constraints <- function(
 
   p <- length(labels)
   fixed_gaps <- matrix(FALSE, p, p, dimnames = list(labels, labels))
-  fixed_edges <- matrix(FALSE, p, p, dimnames = list(labels, labels))
   idx <- rlang::set_names(seq_along(labels), labels)
 
-  if (!directed_as_undirected) {
-    bad <- kn$edges |>
-      dplyr::anti_join(kn$edges, by = c("from" = "to", "to" = "from")) |>
-      dplyr::mutate(desc = paste0(.data$from, " --> ", .data$to)) |>
-      dplyr::pull(.data$desc)
-    if (length(bad)) {
-      stop(
-        "pcalg does not support asymmetric edges.\n",
-        "The following have no symmetrical counterpart:\n  * ",
-        paste(bad, collapse = "\n  * "),
-        call. = FALSE
-      )
-    }
+  # pcalg constraints are adjacency-level only; a directed required edge
+  # cannot be honored, so drop required edges with a warning
+  req <- kn$edges$status == "required"
+  if (any(req)) {
+    warning(
+      "pcalg constraints cannot represent required edges; ignoring them.",
+      call. = FALSE
+    )
+    kn$edges <- kn$edges[!req, , drop = FALSE]
+  }
+
+  bad <- kn$edges |>
+    dplyr::anti_join(kn$edges, by = c("from" = "to", "to" = "from")) |>
+    dplyr::mutate(desc = paste0(.data$from, " --> ", .data$to)) |>
+    dplyr::pull(.data$desc)
+  if (length(bad)) {
+    stop(
+      "pcalg does not support asymmetric edges.\n",
+      "The following have no symmetrical counterpart:\n  * ",
+      paste(bad, collapse = "\n  * "),
+      call. = FALSE
+    )
   }
 
   # fill forbidden
@@ -187,23 +206,9 @@ as_pcalg_constraints <- function(
       stop("Forbidden edge refers to unknown variable(s).", call. = FALSE)
     }
     fixed_gaps[i, j] <- TRUE
-    if (directed_as_undirected) fixed_gaps[j, i] <- TRUE
   }
 
-  # fill required
-  req <- dplyr::filter(kn$edges, .data$status == "required")
-  for (k in seq_len(nrow(req))) {
-    i <- match(req$from[k], labels, nomatch = NA_integer_)
-    j <- match(req$to[k], labels, nomatch = NA_integer_)
-    # extra security measure
-    if (is.na(i) || is.na(j)) {
-      stop("Forbidden edge refers to unknown variable(s).", call. = FALSE)
-    }
-    fixed_edges[i, j] <- TRUE
-    if (directed_as_undirected) fixed_edges[j, i] <- TRUE
-  }
-
-  list(fixed_gaps = fixed_gaps, fixed_edges = fixed_edges)
+  list(fixed_gaps = fixed_gaps)
 }
 
 #' Convert Knowledge to bnlearn Knowledge
@@ -222,8 +227,8 @@ as_pcalg_constraints <- function(
 #'
 #' @example inst/roxygen-examples/as_bnlearn_knowledge-example.R
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #' @importFrom rlang .data
 #' @export
 as_bnlearn_knowledge <- function(kn) {
@@ -278,8 +283,8 @@ as_bnlearn_knowledge <- function(kn) {
 #' )
 #' cg <- knowledge_to_caugi(kn)
 #'
-#' @family knowledge functions
-#' @concept knowledge
+#' @family knowledge helpers
+#' @concept knowledge-helper
 #'
 #' @export
 knowledge_to_caugi <- function(kn) {

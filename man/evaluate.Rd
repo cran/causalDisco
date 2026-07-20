@@ -18,8 +18,8 @@ A data.frame with one column for each computed metric. Adjacency metrics are pre
 orientation metrics are prefixed with "dir_", other metrics do not get a prefix.
 }
 \description{
-Computes various metrics to evaluate the difference between estimated
-and truth causal graph. Designed primarily for assessing the
+Computes various metrics to evaluate the difference between the estimated
+and true causal graph. Designed primarily for assessing the
 performance of causal discovery algorithms.
 
 Metrics are supplied as a list with three slots: \code{$adj}, \code{$dir}, and \code{$other}.
@@ -48,16 +48,16 @@ evaluate(
 
 }
 \seealso{
-Other metrics: 
-\code{\link{confusion}()},
-\code{\link{f1_score}()},
-\code{\link{false_omission_rate}()},
-\code{\link{fdr}()},
-\code{\link{g1_score}()},
-\code{\link{npv}()},
-\code{\link{precision}()},
-\code{\link{recall}()},
+Other metrics:
+\code{\link[=confusion]{confusion()}},
+\code{\link[=f1_score]{f1_score()}},
+\code{\link[=false_omission_rate]{false_omission_rate()}},
+\code{\link[=fdr]{fdr()}},
+\code{\link[=g1_score]{g1_score()}},
+\code{\link[=npv]{npv()}},
+\code{\link[=precision]{precision()}},
+\code{\link[=recall]{recall()}},
 \code{\link{reexports}},
-\code{\link{specificity}()}
+\code{\link[=specificity]{specificity()}}
 }
 \concept{metrics}

@@ -1,6 +1,6 @@
 Package: causalDisco
 Title: Tools for Causal Discovery on Observational Data
-Version: 1.1.0
+Version: 1.2.1
 Authors@R: c(
     person(given = "Bjarke", family = "Hautop Kristensen", email = "bjarke.kristensen@sund.ku.dk", role = c("aut", "cre")),
     person(given = "Frederik", family = "Fabricius-Bjerre", email = "frederik@fabriciusbjerre.dk", role = "aut"),
@@ -24,36 +24,19 @@ URL: https://github.com/disco-coders/causalDisco,
 BugReports: https://github.com/disco-coders/causalDisco/issues
 Depends: R (>= 4.2.0)
 Imports: bnlearn, caugi (>= 1.0.0), checkmate, cli, digest, dplyr,
-        glue, gtools, lifecycle, methods, micd, pcalg, purrr, R6,
-        readr, rlang, S7, stringr, tibble, tidyr, tidyselect
+        lifecycle, methods, pcalg, purrr, R6, rlang, S7, tibble, tidyr,
+        tidyselect
 Suggests: knitr, mockery, quarto, RhpcBLASctl, rJava, rmarkdown,
-        spelling, testthat (>= 3.0.0), withr, mice
-VignetteBuilder: knitr, quarto
+        spelling, testthat (>= 3.0.0), withr, mice, micd
+VignetteBuilder: quarto
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
 LazyData: true
-RoxygenNote: 7.3.3
-Collate: 'aaa-globals.R' 'aaa-iamb-family.R' 'aaa-init-helpers.R'
-        'alg-bugs.R' 'bnlearn-search.R' 'boss-fci.R' 'boss.R'
-        'cast-obj.R' 'caugi-helpers.R' 'causalDisco-package.R'
-        'causalDisco-search.R' 'check-args.R'
-        'check-knowledge-violations.R' 'conditional-independence.R'
-        'constraint-based-run-helpers.R' 'data.R' 'disco-class.R'
-        'disco-doc-helpers.R' 'disco-method.R' 'disco.R' 'edges.R'
-        'engine-registry.R' 'extend-causaldisco-algs.R' 'fci.R' 'ges.R'
-        'gfci.R' 'grasp-fci.R' 'grasp.R' 'gs.R' 'hc.R' 'iamb-family.R'
-        'install-tetrad.R' 'knowledge-conversions.R'
-        'knowledge-helpers.R' 'knowledge-manipulation.R'
-        'knowledge-verbs.R' 'knowledge.R' 'make-tikz-helpers.R'
-        'make-tikz.R' 'metric-helpers.R' 'metrics.R' 'misc.R' 'pc.R'
-        'pcalg-search.R' 'pcalg-type-tests.R' 'plot.R'
-        'print-helpers.R' 'runners.R' 'simulation.R' 'sp-fci.R'
-        'tabu.R' 'tetrad-graph.R' 'tetrad-rdata-utils.R'
-        'tetrad-search.R' 'tpc-run.R' 'tfci-run.R' 'tfci.R'
-        'tges-run.R' 'tges.R' 'tpc.R' 'zzz.R'
+Config/Needs/website: quarto
+Config/roxygen2/version: 8.0.0
 NeedsCompilation: no
-Packaged: 2026-04-13 14:34:46 UTC; bjarke
+Packaged: 2026-07-20 17:26:35 UTC; bjarke
 Author: Bjarke Hautop Kristensen [aut, cre],
   Frederik Fabricius-Bjerre [aut],
   Anne Helby Petersen [aut],
@@ -61,4 +44,4 @@ Author: Bjarke Hautop Kristensen [aut, cre],
   Tobias Ellegaard Larsen [ctb]
 Maintainer: Bjarke Hautop Kristensen <bjarke.kristensen@sund.ku.dk>
 Repository: CRAN
-Date/Publication: 2026-04-13 15:40:02 UTC
+Date/Publication: 2026-07-20 18:00:02 UTC

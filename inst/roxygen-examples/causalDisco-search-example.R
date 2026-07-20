@@ -31,7 +31,7 @@ s_tpc <- CausalDiscoSearch$new()
 s_tpc$set_params(list(verbose = FALSE))
 s_tpc$set_test("fisher_z", alpha = 0.2)
 s_tpc$set_alg("tpc")
-s_tpc$set_knowledge(kn, directed_as_undirected = TRUE)
+s_tpc$set_knowledge(kn)
 s_tpc$set_data(tpc_example)
 res_tpc <- s_tpc$run_search()
 print(res_tpc)
@@ -49,6 +49,24 @@ s_tges$set_data(tpc_example, set_suff_stat = FALSE) # suff stat not used for TGE
 s_tges$set_knowledge(kn)
 res_tges <- s_tges$run_search()
 print(res_tges)
+
+# --- Custom (user-defined) algorithm: constraint-based -----------------------
+my_alg <- function(data, knowledge, suff_stat) {
+  tpc_run(
+    data = data,
+    knowledge = knowledge,
+    suff_stat = suff_stat,
+    test = reg_test
+  )
+}
+
+s_custom <- CausalDiscoSearch$new()
+s_custom$set_test("reg")
+s_custom$set_knowledge(kn)
+s_custom$set_alg(my_alg) # type = "constraint" by default
+s_custom$set_data(tpc_example)
+res_custom <- s_custom$run_search()
+print(res_custom)
 
 # --- Intentional error demonstrations ----------------------------------------
 

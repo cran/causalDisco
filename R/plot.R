@@ -73,7 +73,7 @@
 #'     youth ~ starts_with("youth"),
 #'     old ~ starts_with("old")
 #'   ),
-#'   child_x1 %-->% c(child_x2, youth_x4) # required edges
+#'   child_x1 %-->% child_x2 + youth_x4 # required edges
 #' )
 #' bnlearn_pc <- pc(engine = "bnlearn", test = "fisher_z")
 #' disco_bnlearn_pc <- disco(data = tpc_example, method = bnlearn_pc, knowledge = kn)
@@ -96,7 +96,7 @@
 #' data(num_data)
 #' kn_untiered <- knowledge(
 #'   num_data,
-#'   X1 %-->% c(X2, X3),
+#'   X1 %-->% X2 + X3,
 #'   Z %!-->% Y
 #' )
 #'
@@ -112,7 +112,8 @@
 #' )
 #' plot(res_untiered, layout = custom_layout)
 #'
-#' @seealso [caugi::plot()]
+#' @concept plot
+#' @family plot
 #' @export
 plot.Disco <- function(
   x,
@@ -153,8 +154,8 @@ plot.Disco <- function(
 #' Visualize a `Knowledge` object as a directed graph using [caugi::plot()].
 #'
 #' - **Required edges** are drawn in **blue** by default (can be changed via `required_col`).
-#' - **Forbidden edges** are drawn in **red** by default (can be changed via `forbidden_col`). If A to B and B to
-#' a is forbidden, a edge `<->` is drawn.
+#' - **Forbidden edges** are drawn in **red** by default (can be changed via `forbidden_col`). If A to B
+#' and B to A is forbidden, an edge `<->` is drawn.
 #' - If tiered knowledge is provided, nodes are arranged according to their tiers.
 #' - Users can override other edge styling (e.g., line width, arrow size) via the
 #'   `edge_style` argument. To override the color of a specific edge, use
@@ -232,8 +233,8 @@ plot.Disco <- function(
 #'     youth ~ starts_with("youth"),
 #'     old ~ starts_with("old")
 #'   ),
-#'   child_x1 %-->% c(child_x2, youth_x4), # required edges
-#'   youth_x4 %!-->% c(youth_x3, oldage_x5)  # forbidden edges
+#'   child_x1 %-->% child_x2 + youth_x4, # required edges
+#'   youth_x4 %!-->% youth_x3 + oldage_x5  # forbidden edges
 #' )
 #'
 #' # Edge from child_x1 to child_x2 will be orange, but edge from child_x1 to youth_x4
@@ -259,7 +260,7 @@ plot.Disco <- function(
 #' # Define a `Knowledge` object without tiers
 #' kn_untiered <- knowledge(
 #'   tpc_example,
-#'   child_x1 %-->% c(child_x2, youth_x3),
+#'   child_x1 %-->% child_x2 + youth_x3,
 #'   youth_x4 %!-->% oldage_x5
 #' )
 #' # Plot with default layout
@@ -273,6 +274,8 @@ plot.Disco <- function(
 #' )
 #' plot(kn_untiered, layout = custom_layout)
 #'
+#' @concept plot
+#' @family plot
 #' @export
 plot.Knowledge <- function(
   x,
@@ -380,9 +383,11 @@ plot_caugi_common <- function(
 
   # Prepare plot arguments
   plot_args <- list(cg, edge_style = merged_edge_styles)
-  if (has_tiers && !any_na_tiers) {
+
+  user_supplied_layout <- !is.null(dots$layout)
+  if (has_tiers && !any_na_tiers && !user_supplied_layout) {
     plot_args$tiers <- tiers
-  } else if (has_tiers && any_na_tiers) {
+  } else if (has_tiers && any_na_tiers && !user_supplied_layout) {
     warning(
       "Not all nodes are assigned to tiers. Tiered plotting not implemented for partial tiers. \nDefaulting to untiered plotting.",
       call. = FALSE
@@ -398,12 +403,10 @@ plot_caugi_common <- function(
 #' or `Disco`. It dispatches to the class-specific plotting methods
 #' [plot.Knowledge()] and [plot.Disco()].
 #'
-#' @param x An object to plot (class `Knowledge` or `Disco`).
-#' @param ... Additional arguments passed to class-specific plot methods and to [caugi::plot()].
-#'
 #' @return Invisibly returns the input object. The primary effect is the generated plot.
 #'
-#' @seealso [plot.Knowledge()], [plot.Disco()], [caugi::plot()]
+#' @concept plot
+#' @family plot
 #'
 #' @examples
 #' data(tpc_example)

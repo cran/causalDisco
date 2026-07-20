@@ -16,7 +16,6 @@ test_that("Various errors", {
       na_method = "none",
       test = structure(list(), missing_mode = "mi"),
       suff_stat = NULL,
-      directed_as_undirected = FALSE,
       function_name = "test_function"
     ),
     "Selected CI test requires a 'mids' object (multiple imputation data).",
@@ -31,7 +30,6 @@ test_that("Various errors", {
       na_method = "none",
       test = structure(list(), missing_mode = "none"),
       suff_stat = NULL,
-      directed_as_undirected = FALSE,
       function_name = "test_function"
     ),
     "Either data or sufficient statistic must be supplied.",
@@ -46,10 +44,22 @@ test_that("Various errors", {
       na_method = "none",
       test = structure(list(), missing_mode = "none"),
       suff_stat = 1,
-      directed_as_undirected = FALSE,
       function_name = "test_function"
     ),
     "Unknown suff_stat format; cannot infer variable names.",
     fixed = TRUE
   )
+})
+
+test_that("tpc reg_test() and cor_test works with twd", {
+  data(tpc_example)
+  tpc_example_miss <- tpc_example
+  tpc_example_miss[1, 1] <- NA
+  tpc_cd <- tpc(engine = "causalDisco", "reg", na_method = "twd")
+  res <- disco(tpc_example_miss, tpc_cd)
+  expect_true(inherits(res, "Disco"))
+
+  tpc_cd <- tpc(engine = "causalDisco", "fisher_z", na_method = "twd")
+  res <- disco(tpc_example_miss, tpc_cd)
+  expect_true(inherits(res, "Disco"))
 })
