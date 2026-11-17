@@ -73,18 +73,16 @@ init_java <- function(heap = default_heap()) {
     function_name = "init_java"
   )
 
-  dir <- get_tetrad_dir()
-  files_in_dir <- list.files(dir, full.names = TRUE)
-  jar <- files_in_dir[grepl(
-    "tetrad.*\\.jar$",
-    files_in_dir,
-    ignore.case = TRUE
-  )]
+  version <- getOption("causalDisco.tetrad.version")
+  dir <- get_tetrad_dir(version)
+  jar <- find_tetrad_jar(dir, version)
+  if (length(jar) > 1L) {
+    # Putting several Tetrad JARs on the classpath makes the loaded classes
+    # depend on file order.
+    stop(ambiguous_tetrad_jar_msg(dir, version), call. = FALSE)
+  }
   if (!length(jar)) {
-    stop(
-      "No Tetrad JAR found for version ",
-      getOption("causalDisco.tetrad.version")
-    )
+    stop("No Tetrad JAR found for version ", version)
   }
 
   if (rJava::.jniInitialized) {

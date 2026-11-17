@@ -1,3 +1,96 @@
+# causalDisco 1.3.0
+
+## New features
+
+- Added `max_lag()` / `set_max_lag()` to `knowledge()`, which forbids edges
+  between variables that are more than a given number of tiers apart.
+  `max_lag()` is set inside `tier()`, alongside its formulas:
+  `tier(1 ~ V1, 2 ~ V2, max_lag(1))`.
+
+- Tetrad algorithms now expose more of Tetrad's parameters, all defaulting to
+  Tetrad's own defaults:
+  - `grasp()` gains `use_score`, `allow_internal_randomness`, `output_cpdag` and
+    `seed`. Set `allow_internal_randomness = FALSE` for reproducible results.
+  - `grasp_fci()` gains `use_score`, `use_heuristic`, `exclude_selection_bias`
+    and `seed`.
+  - `pc()` gains `collider_orientation_style`, `allow_bidirected` and `fdr_q`.
+  - `fci()` gains `collider_orientation_style`, `do_possible_dsep`,
+    `exclude_selection_bias` and `fdr_q`.
+  - `rfci()` gains `exclude_selection_bias` and `fdr_q`.
+  - `ges()` gains `num_threads`; `boss()` gains `num_threads` and `seed`.
+  - `boss_fci()`, `gfci()` and `sp_fci()` gain `exclude_selection_bias`.
+
+- `plot()` gains `equal_node_size`. By default, all nodes are now drawn the same
+  size, fitted to the longest label. Use `equal_node_size = FALSE` for the
+  previous behaviour, where each node is sized to its own label.
+
+- `tpc_run()` now supports `orientation_method = "standard"` and `"maj_rule"`.
+
+- `make_tikz()` gains:
+  - `style = "classic"`: plain-text nodes, gray tier bands, and a time axis.
+  - `node_labels` and `tier_labels` for LaTeX labels, e.g. `c(X1 = "$X_1$")`.
+  - Edges that would pass through another node are bent around it, as in
+    `plot()`, and bent edges leaving a node together are spread apart. An edge
+    whose bend would pass through a node is bent the other way, or by the
+    nearest angle to `bend` that clears it. `edge_style = list(route = FALSE)`
+    turns both adjustments off.
+  - `bend` sets the bend of all edges in degrees (`0` = straight, negative = the
+    other way), or of individual edges with a list, e.g.
+    `list(default = 20, A = list(B = 0))`.
+  - The output defines named styles (`var`, `link`, `tier`, `tier label`)
+    instead of `every node`/`every path`, which also styled the tiers.
+
+## Lifecycle changes
+
+- `orientation_method = "maj.rule"` in `tpc_run()` and `tfci_run()` is
+  deprecated in favour of `"maj_rule"`.
+
+- `make_tikz(bend_edges, bend_angle)` are deprecated in favour of `bend`:
+  `bend_edges = TRUE, bend_angle = 15` is now `bend = 15`, and
+  `bend_edges = FALSE` is `bend = 0`.
+
+## Bug fixes
+
+- `verify_tetrad()` no longer reports Tetrad as not installed after a successful
+  `install_tetrad()` when the `TETRAD_DIR` environment variable is set. The
+  (undocumented) `TETRAD_DIR` is no longer used; set
+  `options(causalDisco.tetrad_cache = )` to use a custom directory instead.
+
+- `make_tikz()` now draws PAG edge marks (`o->`, `o-o`, `--o`) instead of
+  warning.
+
+- `make_tikz()` with bent edges now bends edges in both directions (`A --> B`,
+  `B --> A`) to opposite sides instead of drawing them on top of each other.
+
+- `install_tetrad(version = )` now saves a non-default Tetrad version in its own
+  cache directory instead of the default version's, and Java loads only the JAR
+  for the configured version.
+
+- `tpc_run()` now orients conservatively by default, as documented; it
+  previously used standard orientation.
+
+- Removed Tetrad algorithm arguments that Tetrad ignored, so setting them had no
+  effect:
+  - `pc()`: `conflict_rule`, `guarantee_cpdag`
+  - `ges()`: `parallelized` (use `num_threads`)
+  - `rfci()`: `stable_fas`, `complete_rule_set_used`
+  - `grasp_fci()`: `stable_fas`, `covered_depth`
+  - `sp_fci()`: `depth`
+  - Also in `TetradSearch$set_alg()`: `cpc` and `pc_max` (`conflict_rule`,
+    `guarantee_cpdag`, `use_heuristic`, `max_disc_path_length`), `fcit`
+    (`guarantee_pag`, `max_disc_path_length`), `restricted_boss`
+    (`allow_internal_randomness`) and `ccd` (`depth`).
+
+- `use_heuristic` in `gfci()` and `sp_fci()` had no effect because it set the
+  wrong Tetrad parameter. It now controls the max-p heuristic as documented.
+
+- `boss_fci()`'s `num_threads` was never passed to Tetrad. It is now, and its
+  default changes from 0 to Tetrad's default of 1.
+
+- `pc(engine = "pcalg")` no longer errors when the estimated graph contains a
+  cycle. Now emits a message and returns the graph with its class downgraded to
+  `"UNKNOWN"`.
+
 # causalDisco 1.2.1
 
 ## New features

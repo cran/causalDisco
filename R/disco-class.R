@@ -48,6 +48,48 @@ new_disco <- function(cg, kn) {
   )
 }
 
+#' @title Build a caugi Graph, Falling Back to UNKNOWN on an Invalid Claimed Class
+#'
+#' @description
+#' Constraint-based algorithms can, due to statistical errors in finite samples, return edges
+#' that do not form a valid graph of the claimed `class`. Rather than erroring, this builds the
+#' graph as `"UNKNOWN"` instead and messages with a diagnostic naming the actual defect, checked
+#' via [caugi::is_acyclic()] and the presence of `<->` edges.
+#'
+#' @param build A function taking a single `class` argument and returning a [caugi::caugi]
+#' object of that class (e.g. `\(cls) caugi::caugi(..., class = cls)` or
+#' `\(cls) caugi::mutate_caugi(cg, cls)`).
+#' @param class The claimed graph class.
+#' @returns The result of `build(class)` if that succeeds, otherwise `build("UNKNOWN")`.
+#' @keywords internal
+#' @noRd
+.caugi_with_fallback <- function(build, class) {
+  tryCatch(
+    build(class),
+    error = function(e) {
+      cg_unknown <- build("UNKNOWN")
+      detail <- ""
+      if (identical(class, "PDAG")) {
+        acyclic <- tryCatch(caugi::is_acyclic(cg_unknown), error = function(e) {
+          NA
+        })
+        has_bidirected <- any(caugi::edges(cg_unknown)$edge == "<->")
+        detail <- if (isFALSE(acyclic) && has_bidirected) {
+          " The graph contains a directed cycle and bidirected conflict edges."
+        } else if (isFALSE(acyclic)) {
+          " The graph contains a directed cycle."
+        } else if (has_bidirected) {
+          " The graph contains bidirected conflict edges."
+        } else {
+          " The graph is not a valid PDAG."
+        }
+      }
+      message(sprintf("Cannot mutate graph to class '%s'.%s", class, detail))
+      cg_unknown
+    }
+  )
+}
+
 #' @inheritParams as_disco
 #' @export
 as_disco.default <- function(
@@ -88,11 +130,16 @@ as_disco.pcAlgo <- function(
     cg <- caugi::caugi(nodes = nodes, class = class)
   } else {
     cg_class <- if (any(edges$edge == "<->")) "UNKNOWN" else class
-    cg <- caugi::caugi(
-      from = edges$from,
-      edge = edges$edge,
-      to = edges$to,
-      nodes = nodes,
+    cg <- .caugi_with_fallback(
+      build = function(cls) {
+        caugi::caugi(
+          from = edges$from,
+          edge = edges$edge,
+          to = edges$to,
+          nodes = nodes,
+          class = cls
+        )
+      },
       class = cg_class
     )
   }
@@ -160,14 +207,13 @@ as_disco.pcAlgo <- function(
 as_disco.fciAlgo <- function(
   graph,
   kn = knowledge(),
-  class = "PAG"
+  class = "UNKNOWN"
 ) {
   if (!is_knowledge(kn)) {
     stop("`kn` must be a Knowledge object.", call. = FALSE)
   }
   amat <- methods::as(graph, "matrix")
-  cg <- caugi::as_caugi(amat, class = class)
-  new_disco(cg, kn)
+  new_disco(.pag_amat_to_caugi(amat, class), kn)
 }
 
 #' @inheritParams as_disco
@@ -175,13 +221,76 @@ as_disco.fciAlgo <- function(
 as_disco.tetrad_graph <- function(
   graph,
   kn = knowledge(),
-  class = "PDAG"
+  class = "UNKNOWN"
 ) {
   if (!is_knowledge(kn)) {
     stop("`kn` must be a Knowledge object.", call. = FALSE)
   }
-  cg <- caugi::as_caugi(graph$amat, collapse = TRUE, class)
-  new_disco(cg, kn)
+  new_disco(.pag_amat_to_caugi(graph$amat, class), kn)
+}
+
+#' @title Build a caugi Graph from a \pkg{pcalg} `amat.pag` Matrix
+#'
+#' @description
+#' Decodes an adjacency matrix in \pkg{pcalg}'s `amat.pag` mark coding
+#' (`amat[i, j]` is the mark at `j` on the edge between `i` and `j`: 0 no edge,
+#' 1 circle, 2 arrowhead, 3 tail) into edges, and builds a [caugi::caugi] of the
+#' given `class`. Used for FCI-type output (\pkg{pcalg}, Tetrad, TFCI).
+#'
+#' The marks are decoded here rather than by [caugi::as_caugi()], because caugi
+#' only reads a matrix of 0s and 1s (e.g. a graph of only `o-o` edges) as mark
+#' coded when `class = "PAG"`, and a `"PAG"` class is validated as a Markov
+#' equivalence class, which finite-sample output need not be. The default
+#' `class = "UNKNOWN"` therefore keeps every mark without validation.
+#'
+#' @param amat A square matrix in `amat.pag` coding with node names as
+#'   column names.
+#' @param class The graph class to build.
+#' @returns A [caugi::caugi] object.
+#' @keywords internal
+#' @noRd
+.pag_amat_to_caugi <- function(amat, class = "UNKNOWN") {
+  amat <- as.matrix(amat)
+  nodes <- colnames(amat)
+  if (is.null(nodes)) {
+    nodes <- rownames(amat)
+  }
+  if (is.null(nodes)) {
+    nodes <- paste0("V", seq_len(ncol(amat)))
+  }
+  if (!all(amat %in% 0:3)) {
+    stop("`amat` must use the amat.pag mark codes 0-3.", call. = FALSE)
+  }
+
+  # Mark rank orders the endpoints so each edge uses a glyph caugi has built in
+  # (`-->`, `o->`, `--o`, `---`, `o-o`, `<->`): tail < circle < arrowhead.
+  rank <- c(`3` = 1L, `1` = 2L, `2` = 3L)
+  left <- c(`3` = "-", `1` = "o", `2` = "<")
+  right <- c(`3` = "-", `1` = "o", `2` = ">")
+
+  idx <- which(upper.tri(amat) & (amat != 0 | t(amat) != 0), arr.ind = TRUE)
+  if (nrow(idx) == 0L) {
+    return(caugi::caugi(nodes = nodes, class = class))
+  }
+  i <- idx[, 1]
+  j <- idx[, 2]
+  mark_at_i <- as.character(amat[cbind(j, i)])
+  mark_at_j <- as.character(amat[cbind(i, j)])
+  swap <- rank[mark_at_i] > rank[mark_at_j]
+
+  from <- ifelse(swap, nodes[j], nodes[i])
+  to <- ifelse(swap, nodes[i], nodes[j])
+  m_from <- ifelse(swap, mark_at_j, mark_at_i)
+  m_to <- ifelse(swap, mark_at_i, mark_at_j)
+  edge <- paste0(left[m_from], "-", right[m_to])
+
+  caugi::caugi(
+    from = unname(from),
+    edge = unname(edge),
+    to = unname(to),
+    nodes = nodes,
+    class = class
+  )
 }
 
 #' @inheritParams as_disco
@@ -250,11 +359,16 @@ as_disco.EssGraph <- function(
       edge = dplyr::if_else(.data$has_fw & .data$has_bw, "---", "-->")
     )
 
-  cg <- caugi::caugi(
-    from = collapsed$from,
-    edge = collapsed$edge,
-    to = collapsed$to,
-    nodes = nodes,
+  cg <- .caugi_with_fallback(
+    build = function(cls) {
+      caugi::caugi(
+        from = collapsed$from,
+        edge = collapsed$edge,
+        to = collapsed$to,
+        nodes = nodes,
+        class = cls
+      )
+    },
     class = class
   )
   new_disco(cg, kn)

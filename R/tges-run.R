@@ -335,6 +335,8 @@ TemporalBIC <- setRefClass(
         knowledge <- knowledge() |> add_vars(nodes)
       }
 
+      # `:::` is required: Reference Class methods are evaluated in the object
+      # environment, which does not see unexported package functions.
       causalDisco:::is_knowledge(knowledge)
 
       .order <<- causalDisco:::.tier_index(knowledge, nodes)
@@ -488,6 +490,8 @@ TemporalBDeu <- setRefClass(
         knowledge <- knowledge() |> add_vars(nodes)
       }
 
+      # `:::` is required: Reference Class methods are evaluated in the object
+      # environment, which does not see unexported package functions.
       causalDisco:::is_knowledge(knowledge)
 
       .order <<- causalDisco:::.tier_index(knowledge, nodes)

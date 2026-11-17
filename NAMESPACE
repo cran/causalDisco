@@ -17,6 +17,7 @@ S3method(print,Knowledge)
 S3method(set_knowledge,Disco)
 S3method(set_knowledge,disco_method)
 S3method(summary,Disco)
+S3method(summary,Knowledge)
 export(BnlearnSearch)
 export(CausalDiscoSearch)
 export(PcalgSearch)
@@ -85,6 +86,7 @@ export(reset_tetrad_alg_registry)
 export(rfci)
 export(seq_tiers)
 export(set_knowledge)
+export(set_max_lag)
 export(shd)
 export(sim_dag)
 export(sim_data)
@@ -104,19 +106,26 @@ importClassesFrom(pcalg,Score)
 importClassesFrom(pcalg,pcAlgo)
 importFrom(R6,R6Class)
 importFrom(bnlearn,pc.stable)
-importFrom(caugi,aid)
-importFrom(caugi,hd)
-importFrom(caugi,shd)
+importFrom(caugi,
+  aid,
+  hd,
+  shd
+)
 importFrom(digest,digest)
 importFrom(lifecycle,deprecated)
 importFrom(methods,new)
-importFrom(rlang,"!!")
-importFrom(rlang,.data)
-importFrom(tidyselect,contains)
-importFrom(tidyselect,ends_with)
-importFrom(tidyselect,eval_select)
-importFrom(tidyselect,everything)
-importFrom(tidyselect,matches)
-importFrom(tidyselect,num_range)
-importFrom(tidyselect,starts_with)
+importFrom(rlang,
+  "!!",
+  "%||%",
+  .data
+)
+importFrom(tidyselect,
+  contains,
+  ends_with,
+  eval_select,
+  everything,
+  matches,
+  num_range,
+  starts_with
+)
 importFrom(utils,download.file)
